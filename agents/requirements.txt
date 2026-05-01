@@ -1,0 +1,9 @@
+transformers
+torch
+pypdf2
+python-docx
+pandas
+openpyxl
+tiktoken
+sentencepiece
+accelerate

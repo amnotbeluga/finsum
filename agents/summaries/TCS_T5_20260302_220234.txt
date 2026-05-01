@@ -1,0 +1,26 @@
+============================================================
+FINANCIAL DOCUMENT SUMMARY - T5 MODEL
+============================================================
+
+Document: TCS.pdf
+Model: T5
+Model Type: Detailed
+Description: Versatile model
+Date: 2026-03-02 22:06:19
+
+------------------------------------------------------------
+DOCUMENT INFO:
+------------------------------------------------------------
+Size: 1499.15 KB
+Original Length: 1531 words
+Summary Length: 69 words
+
+------------------------------------------------------------
+SUMMARY:
+------------------------------------------------------------
+bsr co. LLP independent auditors report on tata consultancy services limited . auditors found 'appropriate accounting policies' and 'design, implementation and maintenance of adequate internal financial controls' for preparing financial results . the respective Board of Directors/Trustees of the companies/entities included in the group is responsible for overseeing the financial reporting process of each company/entity . fraud may involve collusion, forgery, intentional omissions, misrepresentations, or the override of internal
+
+------------------------------------------------------------
+FINANCIAL HIGHLIGHTS:
+------------------------------------------------------------
+1. No specific financial highlights found

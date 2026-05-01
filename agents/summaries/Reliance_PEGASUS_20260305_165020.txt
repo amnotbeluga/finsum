@@ -1,0 +1,22 @@
+============================================================
+FINANCIAL DOCUMENT SUMMARY - PEGASUS MODEL
+============================================================
+
+Document: Reliance.pdf
+Model: PEGASUS
+Model Type: Concise
+Description: Better for news-style summaries
+Date: 2026-03-05 16:55:02
+
+------------------------------------------------------------
+DOCUMENT INFO:
+------------------------------------------------------------
+Size: 4663.42 KB
+Original Length: 1926 words
+Summary Length: 50 words
+
+------------------------------------------------------------
+SUMMARY:
+------------------------------------------------------------
+A look at some of the key players in India's media and entertainment sector, as compiled by the BBC Hindi business news website, www. bollywoodreporter. com: A look at some of the key players in India's media and entertainment sector, as compiled by the BBC Hindi business news website, www.
+

@@ -1,0 +1,26 @@
+============================================================
+FINANCIAL DOCUMENT SUMMARY - PEGASUS MODEL
+============================================================
+
+Document: WAAREE.pdf
+Model: PEGASUS
+Model Type: Concise
+Description: Better for news-style summaries
+Date: 2026-03-03 10:09:06
+
+------------------------------------------------------------
+DOCUMENT INFO:
+------------------------------------------------------------
+Size: 4583.53 KB
+Original Length: 387 words
+Summary Length: 48 words
+
+------------------------------------------------------------
+SUMMARY:
+------------------------------------------------------------
+We wish to inform you that the Company is under investigation by the Income Tax authorities in India for alleged tax evasion of up to                                                               Hold ng Company has not received any demand from CBP,n relallOII 10 tlus matter and conllllues IO cooperate 1111 lhe ongo.ng CBP lnvesbgatlCn.
+
+------------------------------------------------------------
+FINANCIAL HIGHLIGHTS:
+------------------------------------------------------------
+1. No specific financial highlights found

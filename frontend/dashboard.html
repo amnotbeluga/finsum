@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Finserv India</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Alert container -->
+        <div id="alertContainer" class="alert"></div>
+
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h1>Financial Insights Dashboard</h1>
+            <div class="user-menu">
+                <i class="fas fa-bell"></i>
+                <span id="userDisplayName">Loading...</span>
+                <button id="logoutBtn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+        
+        <div class="insights-tagline">
+            Analyze your quarterly and annual filings with AI precision.
+        </div>
+
+        <!-- Upload Area -->
+        <div class="upload-card">
+            <div class="upload-left">
+                <h3>Upload Financial Documents</h3>
+                <p>Drag and drop your PDF or XLSX files here, or click to browse</p>
+                <div class="file-badge">
+                    <i class="far fa-file-pdf"></i>
+                    <i class="far fa-file-excel"></i>
+                    Annual Reports, Q3 Filings, Analyst Notes (Max 50MB)
+                </div>
+            </div>
+            <input type="file" id="fileInput" multiple accept=".pdf,.xlsx,.xls" style="display: none;">
+            <button class="select-files-btn" id="uploadBtn">
+                <i class="fas fa-cloud-upload-alt"></i> Select Files
+            </button>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="recent-header">
+            <h2>Recent Activity <span id="totalDocuments" class="total-badge">5 Total</span></h2>
+            <a href="#" class="view-all" id="viewAllHistory">
+                View All History <i class="fas fa-chevron-right"></i>
+            </a>
+        </div>
+
+        <table class="documents-table">
+            <thead>
+                <tr>
+                    <th>Document Name</th>
+                    <th>Date Uploaded</th>
+                    <th>Status</th>
+                    <th>Size</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr>
+                    <td>Reliance_Industries_AR_2023.pdf</td>
+                    <td>2 hours ago</td>
+                    <td><span class="status" style="background:#dff0d8; color:#256f3a; padding:5px 12px; border-radius:30px;">Processed</span></td>
+                    <td>4.2 MB</td>
+                    <td><i class="fas fa-eye" style="color:#1b6ef3; cursor:pointer;"></i></td>
+                </tr>
+                <tr>
+                    <td>HDFC_Bank_Q3_Results_Final.pdf</td>
+                    <td>5 hours ago</td>
+                    <td><span class="status" style="background:#dff0d8; color:#256f3a; padding:5px 12px; border-radius:30px;">Processed</span></td>
+                    <td>1.8 MB</td>
+                    <td><i class="fas fa-eye" style="color:#1b6ef3; cursor:pointer;"></i></td>
+                </tr>
+                <tr>
+                    <td>Infosys_ESG_Report_2023.pdf</td>
+                    <td>2 days ago</td>
+                    <td><span class="status" style="background:#dff0d8; color:#256f3a; padding:5px 12px; border-radius:30px;">Processed</span></td>
+                    <td>12.4 MB</td>
+                    <td><i class="fas fa-eye" style="color:#1b6ef3; cursor:pointer;"></i></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- AI Assistant + Reliance Card -->
+        <div class="ai-reliance-row">
+            <div class="ai-assistant-card">
+                <h3><i class="fas fa-robot" style="color: #1b6ef3;"></i> AI ASSISTANT</h3>
+                <p>Ask me anything about your financial documents:</p>
+                <div class="chat-prompt">
+                    <input type="text" id="chatInput" placeholder="e.g., Summarize the key metrics...">
+                    <button onclick="document.getElementById('widgetChatInput').value = this.previousElementSibling.value; document.getElementById('chatButton').click(); setTimeout(() => document.getElementById('widgetSendBtn').click(), 500);">
+                        <i class="fas fa-paper-plane"></i> Send
+                    </button>
+                </div>
+                <div class="chat-stats">
+                    <span><i class="far fa-clock"></i> <span id="lastUsed">Ready to help</span></span>
+                    <span><i class="fas fa-database"></i> <span id="documentCount">5</span> documents in context</span>
+                </div>
+            </div>
+
+            <div class="reliance-card">
+                <div class="reliance-header">
+                    <span>SAMPLE ANALYSIS: Reliance Industries AR 2023</span>
+                    <span class="sample-badge"><i class="far fa-file-pdf"></i> Preview</span>
+                </div>
+                <div class="metric-grid">
+                    <div class="metric-item">
+                        <span class="label">FINANCIAL GROWTH</span>
+                        <div class="value">Revenue increased by 23% YoY driven by Retail and O2C segments.</div>
+                    </div>
+                    <div class="metric-item">
+                        <span class="label">OPERATIONAL DEBT</span>
+                        <div class="value">Net debt stands at ₹1.25 Lakh Cr; focus remains on balance sheet deleveraging.</div>
+                    </div>
+                    <div class="metric-item">
+                        <span class="label">FUTURE STRATEGY</span>
+                        <div class="value">Aggressive expansion into Green Hydrogen with ₹75,000 Cr committed over 3 years.</div>
+                    </div>
+                    <div class="metric-item">
+                        <span class="label">RISK FACTORS</span>
+                        <div class="value">Volatile crude prices and potential global slowdown impacting export margins.</div>
+                    </div>
+                </div>
+                <div class="cross-reference">
+                    <i class="fas fa-link"></i> Cross-referenced with 4 comparable industry filings.
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-main">
+            <div>
+                <span>© 2026 Finserv India. All rights reserved.</span>
+                <span class="rbi-badge"><i class="fas fa-lock"></i> Bank-Grade Security</span>
+            </div>
+            <div>
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget">
+        <div class="chat-button" id="chatButton">
+            <i class="fas fa-robot"></i>
+        </div>
+        <div class="chat-box" id="chatBox">
+            <div class="chat-header">
+                <h3><i class="fas fa-robot"></i> FinSum AI Assistant</h3>
+                <button class="close-chat" id="closeChat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai-message">
+                    <div class="message-content">
+                        👋 Hi! I'm FinSum AI, your financial assistant. Ask me about annual reports, market trends, or how to analyze documents!
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="widgetChatInput" placeholder="Ask about financial documents...">
+                <button id="widgetSendBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

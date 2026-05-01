@@ -1,0 +1,26 @@
+============================================================
+FINANCIAL DOCUMENT SUMMARY - DistilBART MODEL
+============================================================
+
+Document: WAAREE.pdf
+Model: DistilBART
+Model Type: Fast
+Description: Faster, slightly less accurate
+Date: 2026-03-03 10:13:40
+
+------------------------------------------------------------
+DOCUMENT INFO:
+------------------------------------------------------------
+Size: 4583.53 KB
+Original Length: 387 words
+Summary Length: 129 words
+
+------------------------------------------------------------
+SUMMARY:
+------------------------------------------------------------
+ Pending final outcome of the above matters, no further adjustments have been made to tbe unaudited standalone financial results for the quarter and nine months period ended December 31, 2025 . The 111veS11gaton perwns o lhe ong,n of ccmponenlS used III solar modules manufactured by lhe Hold ng Company,n India and exported . The Holding Company has slbmtted lhe inlonnation requested by CBP .  Hold ng Company has not received any demand from CBP,n relallOII 10 tlus matter and conllllues IO cooperate 1111 lhe ongo.ng CBP lnvesbgatlCn. The CBP has ailoAed lhe Hold1119 Company IO perfect (lo make paymenl based on the manage men Is assessment) the prior disclosures done by lhe Holding Company . The Board of orectors al lhe,r respecNe rneebngs held on January 21, 2026 .
+
+------------------------------------------------------------
+FINANCIAL HIGHLIGHTS:
+------------------------------------------------------------
+1. No specific financial highlights found

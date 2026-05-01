@@ -1,0 +1,6 @@
+============================================================
+FINANCIAL DOCUMENT SUMMARY - PEGASUS MODEL
+============================================================
+
+Document: KPEL.pdf
+Model: PEGASUS

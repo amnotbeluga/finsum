@@ -1,0 +1,26 @@
+============================================================
+FINANCIAL DOCUMENT SUMMARY - BART MODEL
+============================================================
+
+Document: KPEL.pdf
+Model: BART
+Model Type: Balanced
+Description: Good balance of quality and speed
+Date: 2026-03-03 11:14:50
+
+------------------------------------------------------------
+DOCUMENT INFO:
+------------------------------------------------------------
+Size: 17356.28 KB
+Original Length: 889 words
+Summary Length: 266 words
+
+------------------------------------------------------------
+SUMMARY:
+------------------------------------------------------------
+The equity shares so allotted shall rank pari -passu with the existing equity shares of the Company in all respects. Details for allotment of securities pursuant to Regulation 30 of the SEBI LODR Regulations read with SEBI Circular No. SEBI/HO/CFD/PoD2/CIR/P/0155 dated November 11, 2024, is enclosed as Annexure A. The accompanying statement of unaudited financial results has not disclosed the information required to be disclosed in terms of Regulation 33 of the Listing Regulations, or that it contains any material misstatement. Based on our review conducted and procedures performed as stated above, nothing has come to our attention. Current income tax is recognised outside profit or loss (either in other comprehensive income or in equity) Current tax items are recognised in correlation to the underlying transaction either in OCI or directly in equity. Management periodically evaluates positions taken in the tax returns with respect to situations in which applicable tax regulations are subject to interpretation. The carrying amount of deferred tax assets is reviewed at each reporting date and reduced to the extent that it is no longer probable that sufficient taxable profit will be available to allow all or part of the deferred tax asset to be utilised. Deferred tax assets and liabilities are measured at the tax rates that are expected to apply in the year when the asset is realised.  MAT credit entitlement should be shown sepa rately in the balance sheet. Employee Stock Options Scheme valued in line with the ESOP scheme based on the market price valuation method. Cash and cash equivalent are subject to insignificant risk of changes in value.
+
+------------------------------------------------------------
+FINANCIAL HIGHLIGHTS:
+------------------------------------------------------------
+1. No specific financial highlights found

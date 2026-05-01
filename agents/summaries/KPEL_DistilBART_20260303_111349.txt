@@ -1,0 +1,26 @@
+============================================================
+FINANCIAL DOCUMENT SUMMARY - DistilBART MODEL
+============================================================
+
+Document: KPEL.pdf
+Model: DistilBART
+Model Type: Fast
+Description: Faster, slightly less accurate
+Date: 2026-03-03 11:22:05
+
+------------------------------------------------------------
+DOCUMENT INFO:
+------------------------------------------------------------
+Size: 17356.28 KB
+Original Length: 889 words
+Summary Length: 256 words
+
+------------------------------------------------------------
+SUMMARY:
+------------------------------------------------------------
+ The equity shares so allotted shall rank pari -passu with the existing equity shares of the Company in all respects including the payment of dividend and voting rights . Affan Faruk Patel Whole Time Director DIN 08576337 Encl. a/a K.P. Energy Limited .  The accompanying statement of unaudited financial results has not disclosed the information required to be disclosed in terms of Regulation 33 of the Listing Regulations, including the manner in which it will be disclosed, or that it contains any material misstatement .  Current income tax relating to items recognised outside profit or loss (either in other comprehensive income or in equity) Current tax items are recognised in correlation to the underlying transaction either in OCI or directly in equity . Management periodically evaluates positions taken in the tax returns with respect to situations in which applicable tax regulations are subject to interpretation .  Deferred tax relating to items recognised outside profit or loss . The carrying amount of deferred tax assets is reviewed at each reporting date and reduced to the extent that it is no longer probable that sufficient taxable profit will be available to allow all or part of the deferred tax asset .  MAT credit entitlement should be shown sepa rately in the balance sheet . Employee Stock Options Scheme valued the ESOP provision to the extent of options granted in line with ESOP scheme . Cash and cash equivalent comprise cash at banks and on hand and short-term deposits with an original maturity of three months or less .
+
+------------------------------------------------------------
+FINANCIAL HIGHLIGHTS:
+------------------------------------------------------------
+1. No specific financial highlights found

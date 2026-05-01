@@ -1,0 +1,26 @@
+============================================================
+FINANCIAL DOCUMENT SUMMARY - T5 MODEL
+============================================================
+
+Document: KPEL.pdf
+Model: T5
+Model Type: Detailed
+Description: Versatile model
+Date: 2026-03-03 11:21:11
+
+------------------------------------------------------------
+DOCUMENT INFO:
+------------------------------------------------------------
+Size: 17356.28 KB
+Original Length: 889 words
+Summary Length: 94 words
+
+------------------------------------------------------------
+SUMMARY:
+------------------------------------------------------------
+equity shares so allotted shall rank pari -passu with the existing equity shares of the Company in all respects including the payment of dividend and voting rights . no material misstatement has been found in the accompanying statement . unused tax credits are carried forward by the entity for a specified period of time . deferred tax assets and liabilities are measured at the tax rates that are expected to apply in the year when the asset is realised or the liability is settled . the carrying amount is reviewed at each reporting date
+
+------------------------------------------------------------
+FINANCIAL HIGHLIGHTS:
+------------------------------------------------------------
+1. No specific financial highlights found

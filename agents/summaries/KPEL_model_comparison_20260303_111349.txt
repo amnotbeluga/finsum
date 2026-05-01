@@ -1,0 +1,103 @@
+======================================================================
+MULTI-MODEL FINANCIAL DOCUMENT SUMMARY COMPARISON
+======================================================================
+
+Document: KPEL
+Date: 2026-03-03 11:22:05
+Models compared: 4
+
+----------------------------------------------------------------------
+SUMMARY STATISTICS:
+----------------------------------------------------------------------
+
+BART (Balanced):
+  - Summary Length: 266 words
+  - Compression: 29.9%
+
+PEGASUS (Concise):
+  - Summary Length: 270 words
+  - Compression: 30.4%
+
+T5 (Detailed):
+  - Summary Length: 94 words
+  - Compression: 10.6%
+
+DistilBART (Fast):
+  - Summary Length: 256 words
+  - Compression: 28.8%
+
+======================================================================
+SIDE-BY-SIDE SUMMARY COMPARISON:
+======================================================================
+
+
+**************************************************
+BART MODEL - Balanced
+**************************************************
+The equity shares so allotted shall rank pari -passu with the existing equity shares of the Company in all respects. Details for allotment of securities pursuant to Regulation 30 of the SEBI LODR Regulations read with SEBI Circular No. SEBI/HO/CFD/PoD2/CIR/P/0155 dated November 11, 2024, is enclosed as Annexure A. The accompanying statement of unaudited financial results has not disclosed the information required to be disclosed in terms of Regulation 33 of the Listing Regulations, or that it contains any material misstatement. Based on our review conducted and procedures performed as stated above, nothing has come to our attention. Current income tax is recognised outside profit or loss (either in other comprehensive income or in equity) Current tax items are recognised in correlation to the underlying transaction either in OCI or directly in equity. Management periodically evaluates positions taken in the tax returns with respect to situations in which applicable tax regulations are subject to interpretation. The carrying amount of deferred tax assets is reviewed at each reporting date and reduced to the extent that it is no longer probable that sufficient taxable profit will be available to allow all or part of the deferred tax asset to be utilised. Deferred tax assets and liabilities are measured at the tax rates that are expected to apply in the year when the asset is realised.  MAT credit entitlement should be shown sepa rately in the balance sheet. Employee Stock Options Scheme valued in line with the ESOP scheme based on the market price valuation method. Cash and cash equivalent are subject to insignificant risk of changes in value.
+
+Highlights (1):
+  • No specific financial highlights found
+
+**************************************************
+PEGASUS MODEL - Concise
+**************************************************
+We wish to inform you that the Board of Directors of the Company at its meeting held on November 10, 2018, inter alia, has approved allotment of equity shares of face value of Re 1 each to the employees of the Company. We would like to clarify that the accompanying statement of unaudited financial results, prepared in accordance with Indian Accounting Standards (Ind AS) specified under Section 133 of the Companies Act, 2013, as amended, read with relevant rules issued thereunder and other recognised accounting practices and policies generally accepted in India, has not disclosed the information required to be disclosed in terms of Regulation 33 of the Listing Regulations. Based on our review conducted and procedures performed as stated above, nothing has come to our attention that causes us to believe that the accompanying statement of unaudited financial results, prepared in accordance with applicable Indian Accounting Standards (Ind AS) specified under Section 133 of the Companies Act, 2013, as amended, read with relevant rules issued thereunder and other The Company's financial results for the three months and nine months ended 30 June 2014 are prepared in accordance with the Indian Accounting Standards (IAS) and the International Financial Reporting Standards (IFRS). Defe rred tax refers to the tax payable when an item is recognised outside profit or loss (either in other comprehensive income or in equity) or when an item is recognised outside profit or loss (either in other comprehensive income or in equity). Following the announcement of the results for the six months to the end of December 2013, the Company has taken the opportunity to update the following:
+
+Highlights (1):
+  • No specific financial highlights found
+
+**************************************************
+T5 MODEL - Detailed
+**************************************************
+equity shares so allotted shall rank pari -passu with the existing equity shares of the Company in all respects including the payment of dividend and voting rights . no material misstatement has been found in the accompanying statement . unused tax credits are carried forward by the entity for a specified period of time . deferred tax assets and liabilities are measured at the tax rates that are expected to apply in the year when the asset is realised or the liability is settled . the carrying amount is reviewed at each reporting date
+
+Highlights (1):
+  • No specific financial highlights found
+
+**************************************************
+DistilBART MODEL - Fast
+**************************************************
+ The equity shares so allotted shall rank pari -passu with the existing equity shares of the Company in all respects including the payment of dividend and voting rights . Affan Faruk Patel Whole Time Director DIN 08576337 Encl. a/a K.P. Energy Limited .  The accompanying statement of unaudited financial results has not disclosed the information required to be disclosed in terms of Regulation 33 of the Listing Regulations, including the manner in which it will be disclosed, or that it contains any material misstatement .  Current income tax relating to items recognised outside profit or loss (either in other comprehensive income or in equity) Current tax items are recognised in correlation to the underlying transaction either in OCI or directly in equity . Management periodically evaluates positions taken in the tax returns with respect to situations in which applicable tax regulations are subject to interpretation .  Deferred tax relating to items recognised outside profit or loss . The carrying amount of deferred tax assets is reviewed at each reporting date and reduced to the extent that it is no longer probable that sufficient taxable profit will be available to allow all or part of the deferred tax asset .  MAT credit entitlement should be shown sepa rately in the balance sheet . Employee Stock Options Scheme valued the ESOP provision to the extent of options granted in line with ESOP scheme . Cash and cash equivalent comprise cash at banks and on hand and short-term deposits with an original maturity of three months or less .
+
+Highlights (1):
+  • No specific financial highlights found
+
+======================================================================
+JSON DATA (for programmatic access):
+======================================================================
+
+{
+  "BART": {
+    "type": "Balanced",
+    "summary": "The equity shares so allotted shall rank pari -passu with the existing equity shares of the Company in all respects. Details for allotment of securities pursuant to Regulation 30 of the SEBI LODR Regulations read with SEBI Circular No. SEBI/HO/CFD/PoD2/CIR/P/0155 dated November 11, 2024, is enclosed as Annexure A. The accompanying statement of unaudited financial results has not disclosed the information required to be disclosed in terms of Regulation 33 of the Listing Regulations, or that it contains any material misstatement. Based on our review conducted and procedures performed as stated above, nothing has come to our attention. Current income tax is recognised outside profit or loss (either in other comprehensive income or in equity) Current tax items are recognised in correlation to the underlying transaction either in OCI or directly in equity. Management periodically evaluates positions taken in the tax returns with respect to situations in which applicable tax regulations are subject to interpretation. The carrying amount of deferred tax assets is reviewed at each reporting date and reduced to the extent that it is no longer probable that sufficient taxable profit will be available to allow all or part of the deferred tax asset to be utilised. Deferred tax assets and liabilities are measured at the tax rates that are expected to apply in the year when the asset is realised.  MAT credit entitlement should be shown sepa rately in the balance sheet. Employee Stock Options Scheme valued in line with the ESOP scheme based on the market price valuation method. Cash and cash equivalent are subject to insignificant risk of changes in value.",
+    "summary_length": 266,
+    "highlights": [
+      "No specific financial highlights found"
+    ]
+  },
+  "PEGASUS": {
+    "type": "Concise",
+    "summary": "We wish to inform you that the Board of Directors of the Company at its meeting held on November 10, 2018, inter alia, has approved allotment of equity shares of face value of Re 1 each to the employees of the Company. We would like to clarify that the accompanying statement of unaudited financial results, prepared in accordance with Indian Accounting Standards (Ind AS) specified under Section 133 of the Companies Act, 2013, as amended, read with relevant rules issued thereunder and other recognised accounting practices and policies generally accepted in India, has not disclosed the information required to be disclosed in terms of Regulation 33 of the Listing Regulations. Based on our review conducted and procedures performed as stated above, nothing has come to our attention that causes us to believe that the accompanying statement of unaudited financial results, prepared in accordance with applicable Indian Accounting Standards (Ind AS) specified under Section 133 of the Companies Act, 2013, as amended, read with relevant rules issued thereunder and other The Company's financial results for the three months and nine months ended 30 June 2014 are prepared in accordance with the Indian Accounting Standards (IAS) and the International Financial Reporting Standards (IFRS). Defe rred tax refers to the tax payable when an item is recognised outside profit or loss (either in other comprehensive income or in equity) or when an item is recognised outside profit or loss (either in other comprehensive income or in equity). Following the announcement of the results for the six months to the end of December 2013, the Company has taken the opportunity to update the following:",
+    "summary_length": 270,
+    "highlights": [
+      "No specific financial highlights found"
+    ]
+  },
+  "T5": {
+    "type": "Detailed",
+    "summary": "equity shares so allotted shall rank pari -passu with the existing equity shares of the Company in all respects including the payment of dividend and voting rights . no material misstatement has been found in the accompanying statement . unused tax credits are carried forward by the entity for a specified period of time . deferred tax assets and liabilities are measured at the tax rates that are expected to apply in the year when the asset is realised or the liability is settled . the carrying amount is reviewed at each reporting date",
+    "summary_length": 94,
+    "highlights": [
+      "No specific financial highlights found"
+    ]
+  },
+  "DistilBART": {
+    "type": "Fast",
+    "summary": " The equity shares so allotted shall rank pari -passu with the existing equity shares of the Company in all respects including the payment of dividend and voting rights . Affan Faruk Patel Whole Time Director DIN 08576337 Encl. a/a K.P. Energy Limited .  The accompanying statement of unaudited financial results has not disclosed the information required to be disclosed in terms of Regulation 33 of the Listing Regulations, including the manner in which it will be disclosed, or that it contains any material misstatement .  Current income tax relating to items recognised outside profit or loss (either in other comprehensive income or in equity) Current tax items are recognised in correlation to the underlying transaction either in OCI or directly in equity . Management periodically evaluates positions taken in the tax returns with respect to situations in which applicable tax regulations are subject to interpretation .  Deferred tax relating to items recognised outside profit or loss . The carrying amount of deferred tax assets is reviewed at each reporting date and reduced to the extent that it is no longer probable that sufficient taxable profit will be available to allow all or part of the deferred tax asset .  MAT credit entitlement should be shown sepa rately in the balance sheet . Employee Stock Options Scheme valued the ESOP provision to the extent of options granted in line with ESOP scheme . Cash and cash equivalent comprise cash at banks and on hand and short-term deposits with an original maturity of three months or less .",
+    "summary_length": 256,
+    "highlights": [
+      "No specific financial highlights found"
+    ]
+  }
+}

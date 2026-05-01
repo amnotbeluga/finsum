@@ -1,0 +1,26 @@
+============================================================
+FINANCIAL DOCUMENT SUMMARY - DistilBART MODEL
+============================================================
+
+Document: TCS.pdf
+Model: DistilBART
+Model Type: Fast
+Description: Faster, slightly less accurate
+Date: 2026-03-02 22:15:08
+
+------------------------------------------------------------
+DOCUMENT INFO:
+------------------------------------------------------------
+Size: 1499.15 KB
+Original Length: 1531 words
+Summary Length: 100 words
+
+------------------------------------------------------------
+SUMMARY:
+------------------------------------------------------------
+ The risk of not detecting a material misstatement resulting from fraud is higher than for one resulting from error . Fraud may involve collusion, forgery, intentional omissions, misrepresentations, or the override of internal control . Future events or conditions may cause the Group to cease to continue as a going concern . Reasonable assurance is a high level of assurance, but is not a guarantee that an audit conducted in accordance with SAs will always detect a misstatement . We communicate with those charged with governance of the Holding Company and such other entities included in consolidated financial results .
+
+------------------------------------------------------------
+FINANCIAL HIGHLIGHTS:
+------------------------------------------------------------
+1. No specific financial highlights found
