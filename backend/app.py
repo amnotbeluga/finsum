@@ -12,12 +12,16 @@ import json
 from functools import wraps
 import traceback
 import re
+from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from document_processor import DocumentProcessor
 from sentiment_analyzer import SentimentAnalyzer
 from summarizer_module import SummarizerModule
 from risk_analyzer import RiskAnalyzer
 from news_module import NewsModule
+
+# Load environment variables from .env
+load_dotenv()
 
 # Initialize modules globally to save loading time across requests
 doc_processor = None
@@ -34,7 +38,7 @@ def init_modules():
     if not risk_analyzer: risk_analyzer = RiskAnalyzer()
     if not news_module: news_module = NewsModule()
 # Configuration
-JWT_SECRET = "your-jwt-secret-key-change-this-in-production"  # Change this!
+JWT_SECRET = os.getenv("JWT_SECRET", "your-jwt-secret-key-change-this-in-production")
 
 # Configure Ollama
 OLLAMA_API_URL = "http://localhost:11434/api/generate"
@@ -49,9 +53,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
 CORS(app, supports_credentials=True)
 
-# Supabase credentials
-SUPABASE_URL = "https://nfcsmtqziimepdknstwt.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mY3NtdHF6aWltZXBka25zdHd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MjkyODksImV4cCI6MjA4NjMwNTI4OX0.rcb7CPwCWv0e7Nh-b0MxnsyRA1cuBiNkSBpL7dzWHJs"
+# Supabase credentials (loaded from .env)
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 
 # Connect to Supabase
 try:

@@ -1,9 +1,9 @@
 // frontend/js/dashboard.js
 class Dashboard {
     constructor() {
+        this.apiUrl = 'http://localhost:8000/api';
         this.checkAuth();
         this.init();
-        this.apiUrl = 'http://localhost:8000/api';
     }
 
     async checkAuth() {

@@ -6,13 +6,24 @@ import PyPDF2
 import camelot
 import tabula
 from pdf2image import convert_from_path
-from paddleocr import PaddleOCR
 import pytesseract
 import pandas as pd
 
+try:
+    from paddleocr import PaddleOCR
+    HAS_PADDLE = True
+except ImportError:
+    HAS_PADDLE = False
+
 class DocumentProcessor:
     def __init__(self):
-        self.ocr = PaddleOCR(use_angle_cls=True, lang='en', show_log=False)
+        if HAS_PADDLE:
+            try:
+                self.ocr = PaddleOCR(use_angle_cls=True, lang='en')
+            except Exception:
+                self.ocr = None
+        else:
+            self.ocr = None
         
     def validate_pdf(self, file_path):
         if not file_path.lower().endswith('.pdf'):
@@ -60,16 +71,19 @@ class DocumentProcessor:
         else:
             images = convert_from_path(file_path)
             for img in images:
-                try:
-                    import numpy as np
-                    img_array = np.array(img)
-                    result = self.ocr.ocr(img_array, cls=True)
-                    if result and result[0]:
-                        page_text = " ".join([line[1][0] for line in result[0]])
-                        raw_text += page_text + "\n"
-                except Exception:
-                    page_text = pytesseract.image_to_string(img)
-                    raw_text += page_text + "\n"
+                if self.ocr:
+                    try:
+                        import numpy as np
+                        img_array = np.array(img)
+                        result = self.ocr.ocr(img_array, cls=True)
+                        if result and result[0]:
+                            page_text = " ".join([line[1][0] for line in result[0]])
+                            raw_text += page_text + "\n"
+                            continue
+                    except Exception:
+                        pass
+                page_text = pytesseract.image_to_string(img)
+                raw_text += page_text + "\n"
                     
         return raw_text, tables
 
