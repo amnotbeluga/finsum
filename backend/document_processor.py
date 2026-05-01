@@ -69,21 +69,33 @@ class DocumentProcessor:
                 except Exception:
                     pass
         else:
-            images = convert_from_path(file_path)
-            for img in images:
-                if self.ocr:
+            # Scanned PDF — try OCR, fallback to pdfplumber force-extract
+            try:
+                images = convert_from_path(file_path)
+                for img in images:
+                    if self.ocr:
+                        try:
+                            import numpy as np
+                            img_array = np.array(img)
+                            result = self.ocr.ocr(img_array, cls=True)
+                            if result and result[0]:
+                                page_text = " ".join([line[1][0] for line in result[0]])
+                                raw_text += page_text + "\n"
+                                continue
+                        except Exception:
+                            pass
                     try:
-                        import numpy as np
-                        img_array = np.array(img)
-                        result = self.ocr.ocr(img_array, cls=True)
-                        if result and result[0]:
-                            page_text = " ".join([line[1][0] for line in result[0]])
-                            raw_text += page_text + "\n"
-                            continue
+                        page_text = pytesseract.image_to_string(img)
+                        raw_text += page_text + "\n"
                     except Exception:
                         pass
-                page_text = pytesseract.image_to_string(img)
-                raw_text += page_text + "\n"
+            except Exception:
+                # If pdf2image/poppler also fails, force pdfplumber extraction
+                with pdfplumber.open(file_path) as pdf:
+                    for page in pdf.pages:
+                        text = page.extract_text()
+                        if text:
+                            raw_text += text + "\n"
                     
         return raw_text, tables
 
