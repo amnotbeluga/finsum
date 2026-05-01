@@ -1,4 +1,4 @@
-<![CDATA[# FinSum Capital India 🇮🇳
+# FinSum Capital India 🇮🇳
 
 **AI-Powered Financial Document Analysis Platform for Indian Markets**
 
@@ -59,7 +59,7 @@ finsum/
 
 - **Python 3.10+**
 - **Ollama** (for AI chat) — [ollama.com](https://ollama.com)
-- **Tesseract OCR** (for scanned PDFs)
+- **Tesseract OCR** (optional, for scanned PDFs)
 - **Poppler** (for `pdf2image`)
 - **Java** (for `tabula-py`)
 
@@ -92,10 +92,16 @@ Create a `.env` file in the `backend/` directory:
 
 ```env
 SUPABASE_URL=your_supabase_project_url
-SUPABASE_KEY=your_supabase_anon_key
-SECRET_KEY=your_secret_key
+SUPABASE_KEY=your_supabase_anon_jwt_key
+SECRET_KEY=your_service_role_key
 JWT_SECRET=your_jwt_secret
 ```
+
+> **Where to find these:** Supabase Dashboard → Project Settings → API
+> - `SUPABASE_URL` → Project URL
+> - `SUPABASE_KEY` → `anon` `public` key (starts with `eyJ...`)
+> - `SECRET_KEY` → `service_role` `secret` key
+> - `JWT_SECRET` → JWT Settings → Legacy JWT Secret
 
 ### 4. Set Up Supabase Tables
 
@@ -103,7 +109,7 @@ Create the following tables in your [Supabase](https://supabase.com) SQL editor:
 
 ```sql
 -- Users table
-CREATE TABLE users (
+CREATE TABLE public.users (
     user_id TEXT PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
     full_name TEXT,
@@ -112,23 +118,28 @@ CREATE TABLE users (
 );
 
 -- Chat history table
-CREATE TABLE chat_history (
+CREATE TABLE public.chat_history (
     id SERIAL PRIMARY KEY,
-    user_id TEXT REFERENCES users(user_id),
+    user_id TEXT REFERENCES public.users(user_id),
     message TEXT NOT NULL,
     response TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT NOW()
 );
 
 -- Documents table
-CREATE TABLE documents (
+CREATE TABLE public.documents (
     id SERIAL PRIMARY KEY,
-    user_id TEXT REFERENCES users(user_id),
+    user_id TEXT REFERENCES public.users(user_id),
     filename TEXT,
     company_name TEXT,
     sentiment TEXT,
     uploaded_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Disable RLS (app handles auth via Flask + JWT)
+ALTER TABLE public.users DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.chat_history DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.documents DISABLE ROW LEVEL SECURITY;
 ```
 
 ### 5. Install & Run Ollama
@@ -148,9 +159,10 @@ ollama serve > /dev/null 2>&1 & sleep 2 && ollama pull llama3
 sudo apt install tesseract-ocr poppler-utils default-jre
 ```
 
-**Fedora/Bazzite:**
+**Fedora/Bazzite (immutable):**
 ```bash
-sudo dnf install tesseract poppler-utils java-17-openjdk
+rpm-ostree install tesseract poppler-utils java-17-openjdk
+systemctl reboot
 ```
 
 **macOS:**
@@ -158,13 +170,15 @@ sudo dnf install tesseract poppler-utils java-17-openjdk
 brew install tesseract poppler java
 ```
 
+> **Note:** Tesseract is optional — the app works without it for text-based PDFs.
+
 ---
 
 ## ▶️ Running the Application
 
 ```bash
 # Terminal 1: Start Ollama (if not already running)
-ollama serve
+ollama serve > /dev/null 2>&1 &
 
 # Terminal 2: Start the backend
 cd backend
@@ -260,4 +274,3 @@ This project is for educational and research purposes.
 <p align="center">
   Built with ❤️ by <a href="https://github.com/amnotbeluga">amnotbeluga</a>
 </p>
-]]>
