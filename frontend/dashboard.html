@@ -9,10 +9,9 @@
 </head>
 <body>
     <div class="app-wrapper">
-        <!-- Alert container -->
+
         <div id="alertContainer" class="alert"></div>
 
-        <!-- Dashboard Header -->
         <div class="dashboard-header">
             <h1>Financial Insights Dashboard</h1>
             <div class="user-menu">
@@ -23,12 +22,11 @@
                 </button>
             </div>
         </div>
-        
+
         <div class="insights-tagline">
             Analyze your quarterly and annual filings with AI precision.
         </div>
 
-        <!-- Upload Area -->
         <div class="upload-card">
             <div class="upload-left">
                 <h3>Upload Financial Documents</h3>
@@ -45,7 +43,6 @@
             </button>
         </div>
 
-        <!-- Recent Activity (Document Scan History) -->
         <div class="recent-header">
             <h2>Scan History <span id="totalDocuments" class="total-badge">0 Total</span></h2>
             <a href="#" class="view-all" id="viewAllHistory">
@@ -70,7 +67,6 @@
             </tbody>
         </table>
 
-        <!-- AI Assistant + Reliance Card -->
         <div class="ai-reliance-row">
             <div class="ai-assistant-card">
                 <h3><i class="fas fa-robot" style="color: #1b6ef3;"></i> AI ASSISTANT</h3>
@@ -116,14 +112,12 @@
             </div>
         </div>
 
-        <!-- Analysis Results (hidden until analysis is done) -->
         <div id="analysisResults" style="display:none;">
             <div class="recent-header" style="margin-top:30px;">
                 <h2><i class="fas fa-chart-bar" style="color:#1b6ef3;"></i> Analysis Results</h2>
                 <button onclick="document.getElementById('analysisResults').style.display='none'" style="background:none;border:none;color:#8a9bb5;cursor:pointer;font-size:16px;"><i class="fas fa-times"></i></button>
             </div>
 
-            <!-- Company Info -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
                 <div style="background:#f8fafd;padding:25px;border-radius:16px;">
                     <div style="color:#8a9bb5;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Company</div>
@@ -137,7 +131,6 @@
                 </div>
             </div>
 
-            <!-- Sentiment -->
             <div style="background:#f8fafd;padding:25px;border-radius:16px;margin-bottom:20px;">
                 <h3 style="margin-bottom:15px;font-size:16px;"><i class="fas fa-brain" style="color:#1b6ef3;margin-right:8px;"></i>Sentiment Analysis</h3>
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;">
@@ -159,27 +152,23 @@
                 </div>
             </div>
 
-            <!-- Summaries -->
             <div style="background:#f8fafd;padding:25px;border-radius:16px;margin-bottom:20px;">
                 <h3 style="margin-bottom:15px;font-size:16px;"><i class="fas fa-file-alt" style="color:#1b6ef3;margin-right:8px;"></i>AI Summaries</h3>
                 <div id="summariesContent" style="font-size:14px;color:#1a2639;line-height:1.8;"></div>
             </div>
 
-            <!-- Risk Analysis -->
             <div id="riskSection" style="background:#f8fafd;padding:25px;border-radius:16px;margin-bottom:20px;display:none;">
                 <h3 style="margin-bottom:15px;font-size:16px;"><i class="fas fa-exclamation-triangle" style="color:#f59e0b;margin-right:8px;"></i>Risk Analysis</h3>
                 <div id="riskContent" style="display:grid;grid-template-columns:repeat(3,1fr);gap:15px;"></div>
                 <div id="riskRecommendation" style="margin-top:15px;padding:15px;border-radius:12px;font-weight:600;text-align:center;font-size:16px;"></div>
             </div>
 
-            <!-- News -->
             <div id="newsSection" style="background:#f8fafd;padding:25px;border-radius:16px;margin-bottom:20px;display:none;">
                 <h3 style="margin-bottom:15px;font-size:16px;"><i class="fas fa-newspaper" style="color:#1b6ef3;margin-right:8px;"></i>Latest News</h3>
                 <div id="newsContent" style="font-size:14px;"></div>
             </div>
         </div>
 
-        <!-- Footer -->
         <div class="footer-main">
             <div>
                 <span>© 2026 Finserv India. All rights reserved.</span>
@@ -192,7 +181,6 @@
         </div>
     </div>
 
-    <!-- Chat Widget -->
     <div class="chat-widget">
         <div class="chat-button" id="chatButton">
             <i class="fas fa-robot"></i>
@@ -220,7 +208,6 @@
         </div>
     </div>
 
-    <!-- History Management Modal -->
     <div id="historyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;backdrop-filter:blur(4px);overflow-y:auto;">
         <div style="max-width:800px;margin:60px auto;background:white;border-radius:20px;padding:0;box-shadow:0 25px 50px rgba(0,0,0,0.15);">
             <div style="display:flex;justify-content:space-between;align-items:center;padding:25px 30px;border-bottom:1px solid #eef2f6;">

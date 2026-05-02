@@ -171,9 +171,9 @@
 <body>
     <div class="auth-wrapper">
         <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
-        
+
         <div id="alertContainer" class="alert"></div>
-        
+
         <div class="signup-panel">
             <h3>Create an account</h3>
             <span class="free-trial">
@@ -212,7 +212,6 @@
                 <span class="divider-line"></span> OR CONTINUE WITH <span class="divider-line"></span>
             </div>
 
-            <!-- Configure your Google Client ID here -->
             <div id="g_id_onload"
                  data-client_id="YOUR_GOOGLE_CLIENT_ID"
                  data-context="signup"
@@ -242,10 +241,10 @@
     <script>
         async function handleCredentialResponse(response) {
             showAlert('Authenticating with Google...', 'success');
-            
+
             try {
                 const result = await window.auth.googleSignin(response.credential);
-                
+
                 if (result.success) {
                     showAlert('Google login successful! Redirecting...', 'success');
                     setTimeout(() => {
@@ -271,7 +270,7 @@
 
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const btn = document.getElementById('signupBtn');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
@@ -283,12 +282,12 @@
                     password: document.getElementById('password').value,
                     fullName: document.getElementById('fullName').value
                 };
-                
+
                 const phoneInput = document.getElementById('phone');
                 if (phoneInput && phoneInput.value) {
                     userData.phone = phoneInput.value;
                 }
-                
+
                 const result = await window.auth.signup(userData);
 
                 if (result.success) {

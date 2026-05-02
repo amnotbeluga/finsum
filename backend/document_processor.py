@@ -40,7 +40,6 @@ class DocumentProcessor:
             raise ValueError("File size must not exceed 50MB")
         return True
 
-    # ─────────────────── Text-Based Detection ─────────────────────────────────
     def is_text_based(self, file_path):
         try:
             with open(file_path, 'rb') as f:
@@ -53,28 +52,23 @@ class DocumentProcessor:
             pass
         return False
 
-    # ─────────────────── OpenCV Image Preprocessing for Low-Quality Scans ─────
     def preprocess_image_for_ocr(self, img):
         if not HAS_OPENCV:
             return np.array(img)
 
         img_array = np.array(img)
 
-        # Convert to grayscale
         gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
 
-        # Apply adaptive thresholding for better text contrast
         thresh = cv2.adaptiveThreshold(
             gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
             cv2.THRESH_BINARY, 11, 2
         )
 
-        # Median blur to reduce noise (especially for 72 DPI scans)
         denoised = cv2.medianBlur(thresh, 3)
 
         return denoised
 
-    # ─────────────────── Cascading Extraction Pipeline ────────────────────────
     def extract_text_and_tables(self, file_path):
         is_text = self.is_text_based(file_path)
         raw_text = ""
@@ -82,7 +76,6 @@ class DocumentProcessor:
         extraction_method = "none"
 
         if is_text:
-            # ── Stage 1: pdfplumber (primary) ──
             try:
                 with pdfplumber.open(file_path) as pdf:
                     for page in pdf.pages:
@@ -93,7 +86,6 @@ class DocumentProcessor:
             except Exception:
                 pass
 
-            # Quality check: if pdfplumber extracted too little, cascade
             if len(raw_text.strip()) < 100:
                 raw_text = ""
                 try:
@@ -107,7 +99,6 @@ class DocumentProcessor:
                 except Exception:
                     pass
 
-            # ── Table Extraction Cascade: Camelot → Tabula ──
             try:
                 camelot_tables = camelot.read_pdf(file_path, pages='all', flavor='lattice')
                 if not camelot_tables or len(camelot_tables) == 0:
@@ -121,15 +112,12 @@ class DocumentProcessor:
                 except Exception:
                     pass
         else:
-            # ── Scanned PDF: OCR Pipeline with Image Preprocessing ──
             extraction_method = "ocr"
             try:
                 images = convert_from_path(file_path, dpi=300)
                 for img in images:
-                    # Preprocess image using OpenCV (grayscale, threshold, denoise)
                     processed = self.preprocess_image_for_ocr(img)
 
-                    # Try PaddleOCR first
                     if self.ocr:
                         try:
                             result = self.ocr.ocr(processed, cls=True)
@@ -140,7 +128,6 @@ class DocumentProcessor:
                         except Exception:
                             pass
 
-                    # Fallback to Tesseract
                     try:
                         page_text = pytesseract.image_to_string(processed)
                         raw_text += page_text + "\n"
@@ -148,7 +135,6 @@ class DocumentProcessor:
                         pass
 
             except Exception:
-                # Final fallback: force pdfplumber even on "scanned" PDF
                 try:
                     with pdfplumber.open(file_path) as pdf:
                         for page in pdf.pages:
@@ -161,7 +147,6 @@ class DocumentProcessor:
 
         return raw_text, tables, extraction_method
 
-    # ─────────────────── Company Detection ────────────────────────────────────
     def detect_company_info(self, raw_text):
         lines = raw_text.split('\n')[:50]
         company_name = None
@@ -181,13 +166,10 @@ class DocumentProcessor:
                     best_score = score
                     company_name = line.strip()
 
-        # BSE/NSE symbol patterns
-        # Strict matching: require colon or hyphen if it's just 'Symbol'
         symbol_pattern = re.compile(r'(?:NSE|BSE|Scrip Code|BSE Code|NSE Symbol)\s*[:\-]?\s*([A-Z0-9]{3,15})|Symbol\s*[:\-]\s*([A-Z0-9]{3,15})', re.IGNORECASE)
         match = symbol_pattern.search(raw_text)
         if match:
             extracted_sym = (match.group(1) or match.group(2)).upper().strip()
-            # Ignore false positives
             if extracted_sym not in ['LIMITED', 'LTD', 'COMPANY', 'INC', 'AND', 'THE']:
                 trading_symbol = extracted_sym
 
@@ -196,7 +178,6 @@ class DocumentProcessor:
             import requests
             import urllib.parse
             try:
-                # Clean company name and URL encode it
                 clean_name = re.sub(r'[^\w\s]', '', company_name).strip()
                 encoded_query = urllib.parse.quote(clean_name)
                 url = f"https://query2.finance.yahoo.com/v1/finance/search?q={encoded_query}"
@@ -211,7 +192,6 @@ class DocumentProcessor:
                         if exch in ['NSE', 'BSE', 'NSI'] or sym.endswith('.NS') or sym.endswith('.BO'):
                             trading_symbol = sym.replace('.NS', '').replace('.BO', '')
                             break
-                    # If still not found, just take the first match as a last resort
                     if not trading_symbol and quotes:
                         trading_symbol = quotes[0].get('symbol', '').replace('.NS', '').replace('.BO', '')
             except Exception as e:
@@ -224,7 +204,6 @@ class DocumentProcessor:
 
         return company_name, trading_symbol
 
-    # ─────────────────── Indian Number Parser ─────────────────────────────────
     def parse_indian_number(self, text):
         text = text.lower().replace(',', '')
         match = re.search(r'([\d.]+)\s*(crore|cr|lakh|million|mn|billion|bn)?', text)
@@ -244,7 +223,6 @@ class DocumentProcessor:
             return val * 1_000_000_000
         return val
 
-    # ─────────────────── Main Process ─────────────────────────────────────────
     def process(self, file_path):
         self.validate_pdf(file_path)
         raw_text, tables, extraction_method = self.extract_text_and_tables(file_path)

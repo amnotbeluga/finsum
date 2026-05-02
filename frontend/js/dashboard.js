@@ -1,4 +1,4 @@
-// frontend/js/dashboard.js
+
 class Dashboard {
     constructor() {
         this.apiUrl = '/api';
@@ -11,7 +11,7 @@ class Dashboard {
             window.location.href = '/';
             return;
         }
-        
+
         const isValid = await window.auth.verifyToken();
         if (!isValid) {
             window.auth.logout();
@@ -36,7 +36,7 @@ class Dashboard {
     }
 
     setupEventListeners() {
-        // Logout button
+
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', (e) => {
@@ -45,16 +45,14 @@ class Dashboard {
             });
         }
 
-        // File upload
         const uploadBtn = document.getElementById('uploadBtn');
         const fileInput = document.getElementById('fileInput');
-        
+
         if (uploadBtn && fileInput) {
             uploadBtn.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', (e) => this.handleFileUpload(e));
         }
 
-        // View all history
         const viewAllHistory = document.getElementById('viewAllHistory');
         if (viewAllHistory) {
             viewAllHistory.addEventListener('click', (e) => {
@@ -68,7 +66,6 @@ class Dashboard {
             clearAllHistoryBtn.addEventListener('click', () => this.clearAllHistory());
         }
 
-        // Chat widget
         this.setupChatWidget();
     }
 
@@ -105,22 +102,20 @@ class Dashboard {
     async sendChatMessage() {
         const input = document.getElementById('widgetChatInput');
         const message = input.value.trim();
-        
+
         if (!message) return;
 
         const messages = document.getElementById('chatMessages');
-        
-        // Add user message
+
         messages.innerHTML += `
             <div class="message user-message">
                 <div class="message-content">${this.escapeHtml(message)}</div>
             </div>
         `;
-        
+
         input.value = '';
         messages.scrollTop = messages.scrollHeight;
 
-        // Show typing indicator
         this.showTypingIndicator();
 
         try {
@@ -136,7 +131,7 @@ class Dashboard {
             this.hideTypingIndicator();
 
             const data = await response.json();
-            
+
             if (response.ok) {
                 messages.innerHTML += `
                     <div class="message ai-message">
@@ -159,16 +154,16 @@ class Dashboard {
             `;
             console.error('Chat error:', error);
         }
-        
+
         messages.scrollTop = messages.scrollHeight;
     }
 
     showTypingIndicator() {
         const messages = document.getElementById('chatMessages');
         if (!messages) return;
-        
+
         if (document.getElementById('typing-indicator')) return;
-        
+
         const indicator = document.createElement('div');
         indicator.id = 'typing-indicator';
         indicator.className = 'message ai-message';
@@ -201,7 +196,7 @@ class Dashboard {
                 if (history.length > 0) {
                     const messages = document.getElementById('chatMessages');
                     messages.innerHTML = '';
-                    
+
                     history.slice(0, 10).reverse().forEach(msg => {
                         messages.innerHTML += `
                             <div class="message user-message">
@@ -226,13 +221,12 @@ class Dashboard {
             const file = files[0];
             const formData = new FormData();
             formData.append('file', file);
-            
-            // Show loading state
+
             const uploadBtn = document.getElementById('uploadBtn');
             const originalText = uploadBtn.innerHTML;
             uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
             uploadBtn.disabled = true;
-            
+
             try {
                 const response = await fetch(`${this.apiUrl}/analyze`, {
                     method: 'POST',
@@ -241,9 +235,9 @@ class Dashboard {
                     },
                     body: formData
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok) {
                     this.updateDashboardWithResults(data);
                 } else {
@@ -255,7 +249,7 @@ class Dashboard {
             } finally {
                 uploadBtn.innerHTML = originalText;
                 uploadBtn.disabled = false;
-                event.target.value = ''; // Reset file input
+                event.target.value = ''; 
             }
         }
     }
@@ -271,24 +265,21 @@ class Dashboard {
     }
 
     updateDashboardWithResults(data) {
-        // Show success notification
+
         this.showNotification(`✅ Analysis complete for ${data.company_name || 'document'}!`);
 
-        // Hide sample card, show results
         const sampleCard = document.getElementById('sampleCard');
         if (sampleCard) sampleCard.style.display = 'none';
 
         const results = document.getElementById('analysisResults');
         if (results) results.style.display = 'block';
 
-        // Company info
         const companyEl = document.getElementById('resultCompany');
         if (companyEl) companyEl.textContent = data.company_name || 'Unknown Company';
 
         const symbolEl = document.getElementById('resultSymbol');
         if (symbolEl) symbolEl.textContent = data.trading_symbol || 'N/A';
 
-        // Document info
         const textLenEl = document.getElementById('resultTextLen');
         if (textLenEl && data.document_processing) {
             const chars = data.document_processing.text_length || 0;
@@ -307,7 +298,6 @@ class Dashboard {
             tablesEl.textContent = info;
         }
 
-        // Sentiment
         if (data.sentiment) {
             const cls = data.sentiment.classification || 'Neutral';
             const score = data.sentiment.score || 0;
@@ -321,7 +311,6 @@ class Dashboard {
             const scoreEl = document.getElementById('sentimentScore');
             if (scoreEl) scoreEl.textContent = `Score: ${score}`;
 
-            // Components
             const compEl = document.getElementById('sentimentComponents');
             if (compEl && data.sentiment.components) {
                 const c = data.sentiment.components;
@@ -333,7 +322,6 @@ class Dashboard {
                 `;
             }
 
-            // Bar
             const bar = document.getElementById('sentimentBar');
             if (bar) {
                 const pct = Math.round((score + 1) / 2 * 100);
@@ -342,7 +330,6 @@ class Dashboard {
             }
         }
 
-        // Summaries
         const sumEl = document.getElementById('summariesContent');
         if (sumEl && data.summaries) {
             let html = '';
@@ -358,7 +345,6 @@ class Dashboard {
             sumEl.innerHTML = html || '<div style="color:#8a9bb5;">No summaries generated.</div>';
         }
 
-        // Risk Analysis — always show section
         const riskSection = document.getElementById('riskSection');
         if (riskSection) riskSection.style.display = 'block';
         if (data.risk_analysis && !data.risk_analysis.error) {
@@ -414,7 +400,6 @@ class Dashboard {
             if (recEl) recEl.style.display = 'none';
         }
 
-        // News — always show section
         const newsSection = document.getElementById('newsSection');
         if (newsSection) newsSection.style.display = 'block';
         if (data.news && data.news.length > 0) {
@@ -434,10 +419,8 @@ class Dashboard {
             if (newsEl) newsEl.innerHTML = '<div style="color:#8a9bb5;padding:10px;">No news articles found for this company.</div>';
         }
 
-        // Scroll to results
         results.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-        // Reload document history table
         this.loadDocumentHistory();
     }
 
@@ -463,11 +446,11 @@ class Dashboard {
             if (docCount) docCount.textContent = docs.length.toString();
 
             tbody.innerHTML = '';
-            this.historyDocs = docs; // Ensure it's stored for the main dashboard view too
+            this.historyDocs = docs; 
             docs.slice(0, 20).forEach(doc => {
                 const date = doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : 'N/A';
                 const sentColor = doc.sentiment === 'Positive' ? '#10b981' : doc.sentiment === 'Negative' ? '#ef4444' : '#f59e0b';
-                
+
                 const viewBtn = doc.analysis_data 
                     ? `<button onclick="window.dashboard.openHistoricalDocument(${doc.id})" style="background:none;border:none;color:#1b6ef3;cursor:pointer;font-size:16px;padding:4px;" title="View Analysis">
                            <i class="fas fa-eye"></i>
@@ -510,7 +493,6 @@ class Dashboard {
         modal.style.display = 'block';
         body.innerHTML = '<div style="text-align:center;color:#8a9bb5;padding:40px;">Loading...</div>';
 
-        // Close on backdrop click
         modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
 
         fetch(`${this.apiUrl}/documents`, {
@@ -526,12 +508,11 @@ class Dashboard {
             }
 
             let html = '';
-            this.historyDocs = docs; // Store for easy retrieval when viewing
+            this.historyDocs = docs; 
             docs.forEach(doc => {
                 const date = doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : 'N/A';
                 const sentColor = doc.sentiment === 'Positive' ? '#10b981' : doc.sentiment === 'Negative' ? '#ef4444' : '#f59e0b';
-                
-                // Only show View button if we have analysis data saved for this document
+
                 const viewBtn = doc.analysis_data 
                     ? `<button onclick="window.dashboard.openHistoricalDocument(${doc.id})" style="background:#f1f5f9;border:none;color:#1b6ef3;cursor:pointer;font-size:13px;padding:6px 12px;border-radius:10px;font-weight:600;" title="View Analysis">
                            <i class="fas fa-eye"></i> View
@@ -606,7 +587,7 @@ class Dashboard {
                     row.style.transform = 'translateX(20px)';
                     setTimeout(() => {
                         row.remove();
-                        // Update modal count
+
                         const count = document.getElementById('historyCount');
                         const remaining = document.querySelectorAll('[id^="histDoc-"]').length;
                         if (count) count.textContent = `${remaining} document${remaining !== 1 ? 's' : ''} analyzed`;
@@ -641,7 +622,6 @@ class Dashboard {
                 this.loadDocumentHistory();
                 this.showNotification('All history cleared');
 
-                // Reset table to empty state
                 const tbody = document.getElementById('tableBody');
                 if (tbody) {
                     tbody.innerHTML = '<tr id="noDocsRow"><td colspan="5" style="text-align:center;color:#8a9bb5;padding:30px;">No documents analyzed yet. Upload a PDF above to get started.</td></tr>';
@@ -658,7 +638,6 @@ class Dashboard {
     }
 }
 
-// Initialize dashboard when page loads
 document.addEventListener('DOMContentLoaded', () => {
     if (window.location.pathname.includes('dashboard')) {
         window.dashboard = new Dashboard();

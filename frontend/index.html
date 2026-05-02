@@ -19,7 +19,6 @@
             line-height: 1.6;
         }
 
-        /* Navigation */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -87,7 +86,6 @@
             box-shadow: 0 10px 25px rgba(27,110,243,0.3);
         }
 
-        /* Hero Section */
         .hero {
             padding: 60px 5%;
             display: grid;
@@ -238,7 +236,6 @@
             color: #ef4444;
         }
 
-        /* Features Section */
         .features {
             padding: 80px 5%;
             background: white;
@@ -309,7 +306,6 @@
             line-height: 1.6;
         }
 
-        /* How It Works */
         .how-it-works {
             padding: 80px 5%;
             background: linear-gradient(135deg, #1b6ef3 0%, #0e5ad2 100%);
@@ -357,7 +353,6 @@
             line-height: 1.6;
         }
 
-        /* FinSum Features */
         .finsum-features {
             padding: 80px 5%;
             background: white;
@@ -392,7 +387,6 @@
             font-size: 14px;
         }
 
-        /* Testimonials */
         .testimonials {
             padding: 80px 5%;
             background: #f8fafd;
@@ -450,7 +444,6 @@
             color: #8a9bb5;
         }
 
-        /* CTA Section */
         .cta-section {
             padding: 80px 5%;
             background: linear-gradient(135deg, #0a1a2b 0%, #1a2b3f 100%);
@@ -492,7 +485,6 @@
             box-shadow: 0 20px 40px rgba(27,110,243,0.4);
         }
 
-        /* Footer */
         .footer {
             padding: 60px 5% 30px;
             background: white;
@@ -539,7 +531,6 @@
             font-size: 14px;
         }
 
-        /* Alert */
         .alert {
             display: none;
             padding: 16px 24px;
@@ -566,12 +557,11 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* Responsive */
         @media (max-width: 1024px) {
             .hero {
                 grid-template-columns: 1fr;
             }
-            
+
             .features-grid,
             .steps-grid,
             .finsum-grid,
@@ -585,7 +575,7 @@
             .nav-links {
                 display: none;
             }
-            
+
             .features-grid,
             .steps-grid,
             .finsum-grid,
@@ -593,7 +583,7 @@
             .footer-content {
                 grid-template-columns: 1fr;
             }
-            
+
             .hero h1 {
                 font-size: 36px;
             }
@@ -601,10 +591,9 @@
     </style>
 </head>
 <body>
-    <!-- Alert container -->
+
     <div id="alertContainer" class="alert"></div>
 
-    <!-- Navigation -->
     <nav class="navbar">
         <div class="logo">FinSum Capital</div>
         <div class="nav-links">
@@ -619,7 +608,6 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <section class="hero">
         <div>
             <div class="hero-badge">
@@ -630,7 +618,7 @@
                 Join 50,000+ Indian investors using FinSum Capital to analyze, predict, 
                 and optimize their investment strategies with cutting-edge artificial intelligence.
             </p>
-            
+
             <div class="hero-stats">
                 <div class="stat-item">
                     <span class="stat-number">₹2,500Cr+</span>
@@ -703,7 +691,6 @@
         </div>
     </section>
 
-    <!-- Features Section -->
     <section id="features" class="features">
         <div class="section-header">
             <h2>Why Top Investors Choose Us</h2>
@@ -761,7 +748,6 @@
         </div>
     </section>
 
-    <!-- FinSum Features -->
     <section class="finsum-features">
         <div class="section-header">
             <h2>FinSum Intelligence</h2>
@@ -792,7 +778,6 @@
         </div>
     </section>
 
-    <!-- How It Works -->
     <section id="how-it-works" class="how-it-works">
         <div class="section-header">
             <h2>Three Steps to Smarter Investing</h2>
@@ -818,7 +803,6 @@
         </div>
     </section>
 
-    <!-- Testimonials -->
     <section id="testimonials" class="testimonials">
         <div class="section-header">
             <h2>Trusted by India's Top Investors</h2>
@@ -854,14 +838,12 @@
         </div>
     </section>
 
-    <!-- CTA Section -->
     <section class="cta-section">
         <h2>Ready to invest smarter?</h2>FinSum Capital
         <p>Join 50,000+ investors who trust  for AI-powered financial analysis</p>
         <a href="/signup" class="cta-button">Start Your 14-Day Free Trial <i class="fas fa-arrow-right"></i></a>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-col">
@@ -907,12 +889,10 @@
             }, 5000);
         }
 
-        // Check if already logged in
         if (window.auth.isAuthenticated()) {
             window.location.href = '/dashboard';
         }
 
-        // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();

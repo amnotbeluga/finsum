@@ -4,13 +4,10 @@ from transformers import pipeline
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from textblob import TextBlob
 
-# Use default HuggingFace cache (~/.cache/huggingface) for model persistence
-# Models are downloaded once and reused on subsequent starts (~5s vs ~50s)
 
 
 class SentimentAnalyzer:
     def __init__(self):
-        # Keyword-based analyzer setup
         self.event_weights = {
             'special dividend': 0.70, 'bonus issue': 0.70, 'stock split': 0.60,
             'profit increase': 0.65, 'revenue growth': 0.60, 'acquisition': 0.50,
@@ -18,7 +15,6 @@ class SentimentAnalyzer:
             'penalty': -0.60, 'loss': -0.50, 'resignation': -0.40, 'lawsuit': -0.50
         }
 
-        # HuggingFace FinBERT — uses local cache after first download
         try:
             self.finbert = pipeline(
                 "sentiment-analysis",
@@ -29,7 +25,6 @@ class SentimentAnalyzer:
             print(f"⚠️ FinBERT not available: {e}")
             self.finbert = None
 
-        # VADER — loads instantly, no download needed
         self.vader = SentimentIntensityAnalyzer()
 
     def keyword_score(self, text):
@@ -49,7 +44,6 @@ class SentimentAnalyzer:
         if not self.finbert or not text.strip():
             return 0
 
-        # Truncate text to avoid exceeding token limit (512 tokens)
         truncated_text = text[:1500]
         try:
             result = self.finbert(truncated_text)[0]
@@ -77,11 +71,8 @@ class SentimentAnalyzer:
         vader = self.vader_score(text)
         textblob = self.textblob_score(text)
 
-        # Weighted fusion:
-        # Keyword (40%), FinBERT (30%), VADER (20%), TextBlob (10%)
         final_score = (keyword * 0.40) + (finbert * 0.30) + (vader * 0.20) + (textblob * 0.10)
 
-        # Normalize
         final_score = max(min(final_score, 1.0), -1.0)
 
         if final_score >= 0.15:

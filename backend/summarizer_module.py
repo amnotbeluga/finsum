@@ -24,11 +24,9 @@ class SummarizerModule:
             "compliance": ["sebi", "compliance", "regulation", "filing", "statutory"]
         }
 
-        # Jaccard similarity threshold for deduplication
         self.dedup_threshold = 0.85
 
     def clean_and_split(self, text):
-        # Remove page numbers, headers, disclaimers
         text = re.sub(r'\bPage \d+ of \d+\b', '', text, flags=re.IGNORECASE)
         text = re.sub(r'Disclaimer.*', '', text, flags=re.IGNORECASE)
         text = re.sub(r'\n+', ' ', text)
@@ -61,7 +59,6 @@ class SummarizerModule:
         scored = []
         for s in sentences:
             score = 0
-            # Priority for numbers and key financial terms
             if re.search(r'\d+', s): score += 2
             if re.search(r'\b(Rs|Cr|Lakh|%|crore)\b', s, re.IGNORECASE): score += 3
             if re.search(r'\b(increase|decrease|growth|fall|rise)\b', s, re.IGNORECASE): score += 2
@@ -70,7 +67,6 @@ class SummarizerModule:
         scored.sort(key=lambda x: x[0], reverse=True)
         return [s for score, s in scored[:limit]]
 
-    # ─────────────────── Jaccard Similarity Deduplication ─────────────────────
     def jaccard_similarity(self, s1, s2):
         set1 = set(s1.lower().split())
         set2 = set(s2.lower().split())
@@ -85,13 +81,11 @@ class SummarizerModule:
         for cat, text in summary.items():
             all_texts.append((cat, text))
 
-        # Compare every pair and remove near-duplicates
         to_remove = set()
         for i in range(len(all_texts)):
             for j in range(i + 1, len(all_texts)):
                 sim = self.jaccard_similarity(all_texts[i][1], all_texts[j][1])
                 if sim >= self.dedup_threshold:
-                    # Keep the one from the more specific category, remove "other" first
                     if all_texts[j][0] == "other":
                         to_remove.add(all_texts[j][0])
                     elif all_texts[i][0] == "other":
@@ -105,7 +99,6 @@ class SummarizerModule:
 
         return summary
 
-    # ─────────────────── BART Summarization ───────────────────────────────────
     def bart_summarize(self, text):
         if not self.bart or len(text.split()) < 30:
             return text
@@ -117,7 +110,6 @@ class SummarizerModule:
         except Exception:
             return text
 
-    # ─────────────────── Parallel Category Summarization ──────────────────────
     def _summarize_category(self, cat, sents):
         if cat == "other":
             return None, None
@@ -139,7 +131,6 @@ class SummarizerModule:
 
         summary = {}
 
-        # Parallel processing with ThreadPoolExecutor (4 workers)
         tasks = []
         with ThreadPoolExecutor(max_workers=4) as executor:
             for cat, sents in categorized.items():
@@ -154,7 +145,6 @@ class SummarizerModule:
                 except Exception:
                     pass
 
-        # Jaccard deduplication across all categories
         summary = self.deduplicate_across_categories(summary)
 
         return summary

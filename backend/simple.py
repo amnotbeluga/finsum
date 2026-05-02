@@ -5,7 +5,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
 from datetime import datetime
 
-# Hardcode your Supabase credentials (for testing only)
 SUPABASE_URL = "https://nfcsmtqziimepdknstwt.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mY3NtdHF6aWltZXBka25zdHd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MjkyODksImV4cCI6MjA4NjMwNTI4OX0.rcb7CPwCWv0e7Nh-b0MxnsyRA1cuBiNkSBpL7dzWHJs"
 
@@ -16,12 +15,10 @@ print("="*50)
 print("🚀 Starting Simple Finserv Backend")
 print("="*50)
 
-# Test Supabase connection
 try:
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
     print("✅ Supabase connected!")
     
-    # Test query
     test = supabase.table('users').select('*').limit(1).execute()
     print("✅ Database query successful!")
 except Exception as e:
@@ -42,12 +39,10 @@ def signup():
         if not email or not password:
             return jsonify({"message": "Email and password required"}), 400
         
-        # Check if user exists
         existing = supabase.table('users').select('*').eq('email', email).execute()
         if existing.data:
             return jsonify({"message": "Email already registered"}), 400
         
-        # Create user
         user_id = str(uuid.uuid4())
         password_hash = generate_password_hash(password)
         
@@ -86,7 +81,6 @@ def signin():
         if not email or not password:
             return jsonify({"message": "Email and password required"}), 400
         
-        # Get user
         result = supabase.table('users').select('*').eq('email', email).execute()
         
         if not result.data:

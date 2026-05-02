@@ -8,7 +8,6 @@ class RiskAnalyzer:
     def __init__(self):
         self._cache = {}
 
-    # ───────────────────────── Market Data with Google Finance Fallback ─────────
     def get_market_data(self, symbol):
         if not symbol.endswith('.NS') and not symbol.endswith('.BO'):
             if symbol.isdigit():
@@ -44,7 +43,6 @@ class RiskAnalyzer:
 
         return None, None
 
-    # ───────────────────────── VaR & Volatility ────────────────────────────────
     def calculate_var_and_volatility(self, hist):
         if hist is None or hist.empty or len(hist) < 30:
             return None, None
@@ -54,7 +52,6 @@ class RiskAnalyzer:
         var_95 = np.percentile(returns, 5)
         return volatility, var_95
 
-    # ───────────────────────── Altman Z-Score ──────────────────────────────────
     def calculate_altman_z_score(self, info):
         try:
             total_assets = info.get('totalAssets', 1)
@@ -84,7 +81,6 @@ class RiskAnalyzer:
         except Exception:
             return None, "Unknown"
 
-    # ───────────────────────── Moving Averages (5-year historical) ─────────────
     def calculate_moving_averages(self, hist):
         if hist is None or len(hist) < 200:
             return None, None
@@ -93,60 +89,50 @@ class RiskAnalyzer:
         sma_200 = hist['Close'].rolling(window=200).mean().iloc[-1]
         return sma_50, sma_200
 
-    # ───────────────────────── Piotroski F-Score (9-point) ─────────────────────
     def calculate_piotroski_f_score(self, info):
         try:
             score = 0
             details = []
 
-            # 1. Positive net income
             net_income = info.get('netIncomeToCommon', 0)
             if net_income > 0:
                 score += 1
                 details.append("Net Income positive (+1)")
 
-            # 2. Positive ROA
             roa = info.get('returnOnAssets', 0)
             if roa and roa > 0:
                 score += 1
                 details.append("ROA positive (+1)")
 
-            # 3. Positive operating cash flow
             ocf = info.get('operatingCashflow', 0)
             if ocf and ocf > 0:
                 score += 1
                 details.append("Operating Cash Flow positive (+1)")
 
-            # 4. Cash flow > net income (accruals quality)
             if ocf and net_income and ocf > net_income:
                 score += 1
                 details.append("Cash Flow > Net Income (+1)")
 
-            # 5. Lower long-term debt ratio (assume positive if D/E < 1)
             debt_to_equity = info.get('debtToEquity', 0)
             if debt_to_equity and debt_to_equity < 100:
                 score += 1
                 details.append("Debt/Equity < 1.0 (+1)")
 
-            # 6. Current ratio improvement (proxy: current ratio > 1)
             current_ratio = info.get('currentRatio', 0)
             if current_ratio and current_ratio > 1:
                 score += 1
                 details.append("Current Ratio > 1 (+1)")
 
-            # 7. No share dilution (shares outstanding stable)
             if info.get('sharesOutstanding') and info.get('floatShares'):
                 if info['sharesOutstanding'] <= info['floatShares'] * 1.1:
                     score += 1
                     details.append("No significant dilution (+1)")
 
-            # 8. Gross margin improvement (proxy: gross margins > 30%)
             gross_margins = info.get('grossMargins', 0)
             if gross_margins and gross_margins > 0.30:
                 score += 1
                 details.append("Gross Margins > 30% (+1)")
 
-            # 9. Asset turnover (revenue/total assets)
             total_assets = info.get('totalAssets', 1)
             revenue = info.get('totalRevenue', 0)
             if total_assets and revenue:
@@ -159,12 +145,8 @@ class RiskAnalyzer:
         except Exception:
             return None, []
 
-    # ───────────────────────── Beneish M-Score (earnings manipulation) ─────────
     def calculate_beneish_m_score(self, info):
         try:
-            # Simplified M-Score using available yfinance data
-            # M = -4.84 + 0.92×DSRI + 0.528×GMI + 0.404×AQI + 0.892×SGI
-            #     + 0.115×DEPI - 0.172×SGAI + 4.679×TATA - 0.327×LVGI
 
             total_assets = info.get('totalAssets', 1)
             revenue = info.get('totalRevenue', 1)
@@ -174,31 +156,23 @@ class RiskAnalyzer:
             total_liabilities = info.get('totalLiabilities', 1)
             operating_cashflow = info.get('operatingCashflow', 0) or 0
 
-            # DSRI (Days Sales in Receivables Index) — proxy
             dsri = (receivables / revenue * 365) / 45 if revenue else 1.0
 
-            # GMI (Gross Margin Index) — proxy: inverse of current margins
             gmi = 1.0 / gross_margins if gross_margins and gross_margins > 0 else 2.0
 
-            # AQI (Asset Quality Index) — proxy
             current_assets = total_assets * 0.4
             ppe = total_assets * 0.3
             aqi = 1.0 - ((current_assets + ppe) / total_assets)
 
-            # SGI (Sales Growth Index) — proxy: use revenue growth
             revenue_growth = info.get('revenueGrowth', 0.1) or 0.1
             sgi = 1.0 + revenue_growth
 
-            # DEPI (Depreciation Index) — proxy
             depi = 1.0
 
-            # SGAI (SGA Index) — proxy
             sgai = 1.0
 
-            # TATA (Total Accruals to Total Assets)
             tata = (net_income - operating_cashflow) / total_assets if total_assets else 0
 
-            # LVGI (Leverage Index)
             lvgi = total_liabilities / total_assets if total_assets else 1.0
 
             m_score = (-4.84 + 0.92 * dsri + 0.528 * gmi + 0.404 * aqi
@@ -216,7 +190,6 @@ class RiskAnalyzer:
         except Exception:
             return None, "Unknown"
 
-    # ───────────────────────── Implied Credit Rating ──────────────────────────
     def calculate_credit_rating(self, z_score, f_score, debt_to_equity, roe):
         try:
             composite = 0
@@ -243,7 +216,6 @@ class RiskAnalyzer:
                 elif roe > 5: composite += 4
                 else: composite += 0
 
-            # Max possible ~87, map to rating
             if composite >= 75: return "AAA", composite
             elif composite >= 65: return "AA", composite
             elif composite >= 55: return "A", composite
@@ -256,7 +228,6 @@ class RiskAnalyzer:
         except Exception:
             return "N/A", 0
 
-    # ───────────────────────── Insider & Promoter Data (NSE) ──────────────────
     def fetch_insider_data(self, symbol):
         clean_sym = symbol.replace('.NS', '').replace('.BO', '')
         result = {
@@ -291,7 +262,6 @@ class RiskAnalyzer:
         except Exception as e:
             print(f"Insider data fetch error: {e}")
 
-        # Promoter pledging - attempt NSE scrape
         try:
             url = f"https://www.nseindia.com/api/corporate-pledgedata?index={clean_sym}"
             headers = {
@@ -309,37 +279,30 @@ class RiskAnalyzer:
 
         return result
 
-    # ───────────────────────── Enhanced Recommendation (0-5 scale) ─────────────
     def generate_recommendation(self, z_score, debt_to_equity, roe, f_score=None, m_score=None):
         score = 0
 
-        # Altman Z-Score contribution (max 2)
         if z_score:
             if z_score > 2.6: score += 2
             elif z_score > 1.8: score += 1
             else: score -= 2
 
-        # Debt/Equity contribution (max 1)
         if debt_to_equity is not None:
             if debt_to_equity < 50: score += 1
             elif debt_to_equity > 100: score -= 1
 
-        # ROE contribution (max 2)
         if roe is not None:
             if roe > 15: score += 2
             elif roe > 10: score += 1
             else: score -= 1
 
-        # Piotroski F-Score bonus (max 1)
         if f_score is not None:
             if f_score >= 7: score += 1
             elif f_score <= 3: score -= 1
 
-        # Beneish M-Score penalty
         if m_score is not None:
             if m_score > -1.78: score -= 2  # Likely manipulator
 
-        # Map to 0-5 scale recommendation
         if score >= 5: return "Strong Buy"
         elif score >= 3: return "Buy"
         elif score >= 1: return "Accumulate on Dips"
@@ -347,7 +310,6 @@ class RiskAnalyzer:
         elif score >= -2: return "Reduce"
         else: return "Sell"
 
-    # ───────────────────────── Main Analysis ──────────────────────────────────
     def analyze(self, symbol):
         if not symbol:
             return {"error": "No trading symbol provided"}
@@ -357,7 +319,6 @@ class RiskAnalyzer:
         if not info:
             return {"error": f"Could not fetch data for {symbol}"}
 
-        # Core metrics
         volatility, var_95 = self.calculate_var_and_volatility(hist)
         z_score, zone = self.calculate_altman_z_score(info)
         sma_50, sma_200 = self.calculate_moving_averages(hist)
@@ -365,15 +326,12 @@ class RiskAnalyzer:
         debt_to_equity = info.get('debtToEquity')
         roe = info.get('returnOnEquity', 0) * 100 if info.get('returnOnEquity') else None
 
-        # Advanced scoring
         f_score, f_details = self.calculate_piotroski_f_score(info)
         m_score, m_flag = self.calculate_beneish_m_score(info)
         credit_rating, credit_composite = self.calculate_credit_rating(z_score, f_score, debt_to_equity, roe)
 
-        # Insider & promoter data
         insider_data = self.fetch_insider_data(symbol)
 
-        # Enhanced recommendation using all scores
         recommendation = self.generate_recommendation(z_score, debt_to_equity, roe, f_score, m_score)
 
         return {

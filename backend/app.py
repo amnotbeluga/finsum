@@ -1,4 +1,3 @@
-# backend/app.py
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from supabase import create_client
@@ -24,7 +23,6 @@ from news_module import NewsModule
 # Load environment variables from .env
 load_dotenv()
 
-# Initialize modules globally to save loading time across requests
 doc_processor = None
 sentiment_analyzer = None
 summarizer_module = None
@@ -51,7 +49,6 @@ print("✅ Ollama API configured successfully!")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
-# Create upload folder if it doesn't exist
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -62,16 +59,13 @@ CORS(app, supports_credentials=True)
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 
-# Connect to Supabase
 try:
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
     print("✅ Supabase connected!")
     
-    # Test the connection and check if tables exist
     test_query = supabase.table('users').select('*').limit(1).execute()
     print("✅ Users table accessible")
     
-    # Try to create chat_history table if it doesn't exist
     try:
         supabase.table('chat_history').select('*').limit(1).execute()
         print("✅ Chat history table exists")
@@ -82,7 +76,6 @@ except Exception as e:
     print(f"❌ Supabase connection failed: {e}")
     supabase = None
 
-# Token required decorator
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -107,7 +100,6 @@ def token_required(f):
                 return jsonify({'message': 'User not found'}), 401
             current_user = current_user.data[0]
             
-            # Add user_id to request context for database operations
             request.user_id = current_user['user_id']
             request.user_email = current_user['email']
             
@@ -121,7 +113,6 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
     return decorated
 
-# Serve frontend pages
 @app.route('/')
 def serve_index():
     return send_from_directory('../frontend', 'index.html')
@@ -182,7 +173,6 @@ def analyze(current_user):
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         file.save(file_path)
 
-        # 1. Document Processing (sequential — must complete first)
         doc_result = doc_processor.process(file_path)
         raw_text = doc_result['raw_text']
         company_name = doc_result['company_name']
@@ -191,7 +181,6 @@ def analyze(current_user):
         if not raw_text or len(raw_text.strip()) < 50:
             return jsonify({'message': 'Could not extract sufficient text from the document.'}), 400
 
-        # 2-5. Parallel Processing — sentiment, summaries, risk, news
         sentiment_result = {}
         summary_result = {}
         risk_result = None
@@ -224,7 +213,6 @@ def analyze(current_user):
             risk_result = f_risk.result()
             news_result = f_news.result()
 
-        # Build full response
         analysis_response = {
             'company_name': company_name,
             'trading_symbol': symbol,
@@ -240,7 +228,6 @@ def analyze(current_user):
             'news': news_result
         }
 
-        # Save document info + full analysis to database (history)
         if supabase:
             try:
                 doc_data = {
@@ -255,7 +242,6 @@ def analyze(current_user):
             except Exception as e:
                 print(f"Failed to store document history: {e}")
 
-        # Clean up
         try:
             os.remove(file_path)
         except Exception:
@@ -321,7 +307,6 @@ def clear_documents(current_user):
         print(f"Error clearing documents: {e}")
         return jsonify({'message': 'Failed to clear history'}), 500
 
-# Chat endpoint with Gemini - Fixed for per-user history
 @app.route('/api/chat', methods=['POST'])
 @token_required
 def chat(current_user):
@@ -351,13 +336,11 @@ def chat(current_user):
                 
                 if history.data and len(history.data) > 0:
                     chat_context = "\nPrevious conversation:\n"
-                    # Reverse to get chronological order
                     for item in reversed(history.data):
                         chat_context += f"User: {item['message']}\nFinSum: {item['response']}\n"
             except Exception as e:
                 print(f"Error fetching chat history: {e}")
         
-        # STRICT SYSTEM PROMPT - FinSum Identity
         system_prompt = """You are FinSum AI, the official AI assistant of Finserv India.
 
 CRITICAL IDENTITY RULES:
@@ -386,12 +369,10 @@ Example responses:
 Always maintain this identity and expertise."""
         
         try:
-            # Include chat context if available
             full_prompt = f"{system_prompt}\n{chat_context}\nUser: {user_message}\nFinSum AI:"
             
             fallback = "I'm FinSum AI, here to help with financial analysis. Ask me about company annual reports, market trends, or specific metrics like revenue growth or P/E ratios."
             
-            # Get response from Ollama (primary LLM)
             ai_response = None
             try:
                 payload = {
@@ -436,11 +417,9 @@ Always maintain this identity and expertise."""
             if not ai_response:
                 ai_response = fallback
             
-            # Clean up response
             ai_response = re.sub(r'(?i)as an AI|I am an AI|I\'m an AI|as a language model', '', ai_response)
             ai_response = re.sub(r'(?i)Google|Gemini|Bard', 'FinSum', ai_response)
             
-            # Store in database with user_id
             if supabase:
                 try:
                     chat_data = {
@@ -464,7 +443,6 @@ Always maintain this identity and expertise."""
             print(f"Gemini API error: {str(e)}")
             traceback.print_exc()
             
-            # Personal response for who-made-you type questions
             if "who made" in user_message.lower() or "who created" in user_message.lower():
                 personal_response = "I'm FinSum AI, created by Finserv India to help investors like you with financial analysis and market insights."
                 return jsonify({'response': personal_response})
@@ -477,7 +455,6 @@ Always maintain this identity and expertise."""
         traceback.print_exc()
         return jsonify({'response': 'FinSum AI is ready to help with financial questions.'})
 
-# Get chat history for specific user
 @app.route('/api/chat/history', methods=['GET'])
 @token_required
 def get_chat_history(current_user):
@@ -507,7 +484,6 @@ def get_chat_history(current_user):
         traceback.print_exc()
         return jsonify([])
 
-# Clear chat history for specific user
 @app.route('/api/chat/clear', methods=['POST'])
 @token_required
 def clear_chat_history(current_user):
@@ -528,7 +504,6 @@ def clear_chat_history(current_user):
         print(f"Error clearing chat history: {e}")
         return jsonify({'message': 'Failed to clear history'}), 500
 
-# Auth endpoints
 @app.route('/api/auth/signup', methods=['POST'])
 def signup():
     try:
@@ -543,12 +518,10 @@ def signup():
         if not email or not password:
             return jsonify({"message": "Email and password required"}), 400
         
-        # Check if user exists
         existing = supabase.table('users').select('*').eq('email', email).execute()
         if existing.data:
             return jsonify({"message": "Email already registered"}), 400
         
-        # Create user
         user_id = str(uuid.uuid4())
         password_hash = generate_password_hash(password)
         
@@ -563,7 +536,6 @@ def signup():
         result = supabase.table('users').insert(user_data).execute()
         
         if result.data:
-            # Generate JWT token
             token = jwt.encode({
                 'user_id': user_id,
                 'email': email,
@@ -599,7 +571,6 @@ def signin():
         if not email or not password:
             return jsonify({"message": "Email and password required"}), 400
         
-        # Get user
         result = supabase.table('users').select('*').eq('email', email).execute()
         
         if not result.data:
@@ -608,7 +579,6 @@ def signin():
         user = result.data[0]
         
         if check_password_hash(user['password_hash'], password):
-            # Generate JWT token
             token = jwt.encode({
                 'user_id': user['user_id'],
                 'email': user['email'],
@@ -643,7 +613,6 @@ def google_auth():
         if not token:
             return jsonify({"message": "Google token required"}), 400
 
-        # Verify token with Google
         verify_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={token}"
         response = requests.get(verify_url)
         
@@ -657,13 +626,11 @@ def google_auth():
         if not email:
             return jsonify({"message": "Email not provided by Google"}), 400
 
-        # Check if user exists
         result = supabase.table('users').select('*').eq('email', email).execute()
         
         if result.data:
             user = result.data[0]
         else:
-            # Create new user for Google login
             user_id = str(uuid.uuid4())
             user = {
                 'user_id': user_id,
@@ -674,7 +641,6 @@ def google_auth():
             }
             supabase.table('users').insert(user).execute()
 
-        # Generate FinSum JWT token
         import jwt
         from datetime import datetime, timedelta
         

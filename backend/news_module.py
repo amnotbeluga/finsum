@@ -132,7 +132,6 @@ class NewsModule:
         if len(articles) < 5 and symbol:
             yf_articles = self.fetch_yfinance_news(symbol)
             
-            # Merge avoiding duplicates
             existing_links = {a['link'] for a in articles}
             for yfa in yf_articles:
                 if yfa['link'] not in existing_links:

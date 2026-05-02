@@ -1,4 +1,4 @@
-// frontend/js/auth.js
+
 class Auth {
     constructor() {
         this.baseUrl = '/api';
@@ -9,7 +9,7 @@ class Auth {
     async signup(userData) {
         try {
             console.log('Sending signup data:', userData);
-            
+
             const response = await fetch(`${this.baseUrl}/auth/signup`, {
                 method: 'POST',
                 headers: {
@@ -20,7 +20,7 @@ class Auth {
 
             const data = await response.json();
             console.log('Signup response:', data);
-            
+
             if (response.ok) {
                 if (data.token) {
                     this.setToken(data.token);
@@ -41,7 +41,7 @@ class Auth {
     async signin(credentials) {
         try {
             console.log('Sending signin data:', credentials);
-            
+
             const response = await fetch(`${this.baseUrl}/auth/signin`, {
                 method: 'POST',
                 headers: {
@@ -52,7 +52,7 @@ class Auth {
 
             const data = await response.json();
             console.log('Signin response:', data);
-            
+
             if (response.ok) {
                 if (data.token) {
                     this.setToken(data.token);
@@ -73,7 +73,7 @@ class Auth {
     async googleSignin(credential) {
         try {
             console.log('Sending Google credential to backend...');
-            
+
             const response = await fetch(`${this.baseUrl}/auth/google`, {
                 method: 'POST',
                 headers: {
@@ -83,7 +83,7 @@ class Auth {
             });
 
             const data = await response.json();
-            
+
             if (response.ok) {
                 if (data.token) {
                     this.setToken(data.token);
@@ -110,7 +110,7 @@ class Auth {
                     'Authorization': `Bearer ${this.token}`
                 }
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 if (data.user) {
@@ -156,5 +156,4 @@ class Auth {
     }
 }
 
-// Create global auth instance
 window.auth = new Auth();
