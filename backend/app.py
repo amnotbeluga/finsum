@@ -681,6 +681,44 @@ def verify(current_user):
         }
     }), 200
 
+@app.route('/api/market-pulse', methods=['GET'])
+def get_market_pulse():
+    import yfinance as yf
+    tickers = {
+        "NIFTY 50": "^NSEI",
+        "SENSEX": "^BSESN",
+        "BANK NIFTY": "^NSEBANK",
+        "INDIA VIX": "^INDIAVIX"
+    }
+    results = []
+    try:
+        for name, symbol in tickers.items():
+            try:
+                ticker = yf.Ticker(symbol)
+                # Pull 5 days of history to guarantee we get the last 2 actual trading days (bypassing weekends/holidays)
+                hist = ticker.history(period="5d")
+                if len(hist) >= 2:
+                    current = hist['Close'].iloc[-1]
+                    prev = hist['Close'].iloc[-2]
+                    change = ((current - prev) / prev) * 100
+                elif len(hist) == 1:
+                    current = hist['Close'].iloc[0]
+                    change = 0.0
+                else:
+                    continue
+                
+                results.append({
+                    "name": name,
+                    "price": f"{current:,.2f}",
+                    "change": round(change, 2)
+                })
+            except Exception as e:
+                print(f"Error fetching {name}: {e}")
+                
+        return jsonify({"data": results}), 200
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 8000))
     host = os.getenv("HOST", "0.0.0.0")

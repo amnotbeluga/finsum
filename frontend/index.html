@@ -649,8 +649,8 @@
                         <span class="ticker-name">NSE</span>
                     </div>
                     <div>
-                        <span class="ticker-price">22,345.60</span>
-                        <span class="ticker-change positive"> +1.2%</span>
+                        <span class="ticker-price" id="nifty-price">...</span>
+                        <span class="ticker-change" id="nifty-change">...</span>
                     </div>
                 </div>
                 <div class="ticker-item">
@@ -659,8 +659,8 @@
                         <span class="ticker-name">BSE</span>
                     </div>
                     <div>
-                        <span class="ticker-price">73,892.45</span>
-                        <span class="ticker-change positive"> +0.8%</span>
+                        <span class="ticker-price" id="sensex-price">...</span>
+                        <span class="ticker-change" id="sensex-change">...</span>
                     </div>
                 </div>
                 <div class="ticker-item">
@@ -669,8 +669,8 @@
                         <span class="ticker-name">NSE</span>
                     </div>
                     <div>
-                        <span class="ticker-price">47,234.15</span>
-                        <span class="ticker-change negative"> -0.3%</span>
+                        <span class="ticker-price" id="banknifty-price">...</span>
+                        <span class="ticker-change" id="banknifty-change">...</span>
                     </div>
                 </div>
                 <div class="ticker-item">
@@ -679,8 +679,8 @@
                         <span class="ticker-name">NSE</span>
                     </div>
                     <div>
-                        <span class="ticker-price">14.32</span>
-                        <span class="ticker-change positive"> +2.1%</span>
+                        <span class="ticker-price" id="vix-price">...</span>
+                        <span class="ticker-change" id="vix-change">...</span>
                     </div>
                 </div>
             </div>
@@ -902,6 +902,36 @@
                 }
             });
         });
+
+        // Fetch Live Market Data
+        async function loadMarketPulse() {
+            try {
+                const response = await fetch('/api/market-pulse');
+                const result = await response.json();
+                
+                if (result.data) {
+                    result.data.forEach(item => {
+                        let priceId, changeId;
+                        if (item.name === "NIFTY 50") { priceId = 'nifty-price'; changeId = 'nifty-change'; }
+                        else if (item.name === "SENSEX") { priceId = 'sensex-price'; changeId = 'sensex-change'; }
+                        else if (item.name === "BANK NIFTY") { priceId = 'banknifty-price'; changeId = 'banknifty-change'; }
+                        else if (item.name === "INDIA VIX") { priceId = 'vix-price'; changeId = 'vix-change'; }
+                        
+                        if (priceId && changeId) {
+                            document.getElementById(priceId).textContent = item.price;
+                            const changeEl = document.getElementById(changeId);
+                            const sign = item.change >= 0 ? '+' : '';
+                            changeEl.textContent = ` ${sign}${item.change}%`;
+                            changeEl.className = `ticker-change ${item.change >= 0 ? 'positive' : 'negative'}`;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Failed to load live market data:", error);
+            }
+        }
+        
+        loadMarketPulse();
     </script>
 </body>
 </html>

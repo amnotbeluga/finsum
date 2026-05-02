@@ -17,6 +17,7 @@ FinSum Capital is a comprehensive, full-stack financial intelligence engine engi
 *   **Ensemble Sentiment Analysis**: Weighted fusion of domain-specific models (FinBERT), heuristic engines (VADER, TextBlob), and custom financial lexicon scoring.
 *   **BART-Powered Summarization**: Category-aware financial summarization utilizing `facebook/bart-large-cnn`, enhanced with Jaccard deduplication to eliminate redundant insights across sections.
 *   **Real-Time Data Aggregation**: Automated retrieval of insider trading data, promoter pledging, and breaking news from Yahoo Finance and Google News RSS.
+*   **Live Market Pulse**: Real-time asynchronous dashboard integration fetching live NIFTY 50, SENSEX, and INDIA VIX data using a 5-day rolling fallback window to bypass weekend data gaps.
 *   **Conversational AI Assistant**: Native integration with Ollama (Llama 3) for contextual chat regarding the scanned documents, supported by a Gemini 2.0 Flash fallback.
 *   **Persistent History & Caching**: All analyses are instantly stored in a Supabase PostgreSQL database using highly optimized `JSONB` caching, allowing for instant reloading without re-processing.
 *   **Frictionless Authentication**: Custom JWT infrastructure seamlessly integrated with **Google OAuth Sign-In** for one-click user provisioning.
