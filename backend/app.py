@@ -5,7 +5,7 @@ from supabase import create_client
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 import requests
 import json
@@ -14,6 +14,7 @@ import traceback
 import re
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
+from concurrent.futures import ThreadPoolExecutor
 from document_processor import DocumentProcessor
 from sentiment_analyzer import SentimentAnalyzer
 from summarizer_module import SummarizerModule
@@ -41,10 +42,14 @@ def init_modules():
 JWT_SECRET = os.getenv("JWT_SECRET", "your-jwt-secret-key-change-this-in-production")
 
 # Configure Ollama
-OLLAMA_API_URL = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "llama3" # Make sure you run `ollama run llama3` first
-model = "ollama_ready" # simple flag
+OLLAMA_API_URL = os.getenv("OLLAMA_API_URL", "http://localhost:11434/api/generate")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
+model = "ollama_ready"
 print("✅ Ollama API configured successfully!")
+
+# Gemini Fallback (set GEMINI_API_KEY in .env to enable)
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
 # Create upload folder if it doesn't exist
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -127,11 +132,17 @@ def serve_dashboard():
 
 @app.route('/signin')
 def serve_signin():
-    return send_from_directory('../frontend', 'signin.html')
+    client_id = os.getenv("GOOGLE_CLIENT_ID", "")
+    with open('../frontend/signin.html', 'r') as f:
+        html = f.read()
+    return html.replace('YOUR_GOOGLE_CLIENT_ID', client_id)
 
 @app.route('/signup')
 def serve_signup():
-    return send_from_directory('../frontend', 'signup.html')
+    client_id = os.getenv("GOOGLE_CLIENT_ID", "")
+    with open('../frontend/signup.html', 'r') as f:
+        html = f.read()
+    return html.replace('YOUR_GOOGLE_CLIENT_ID', client_id)
 
 @app.route('/css/<path:path>')
 def serve_css(path):
@@ -156,82 +167,104 @@ def test():
 def analyze(current_user):
     try:
         init_modules()
-        
+
         if 'file' not in request.files:
             return jsonify({'message': 'No file part in the request'}), 400
-            
+
         file = request.files['file']
         if file.filename == '':
             return jsonify({'message': 'No selected file'}), 400
-            
+
         if not file.filename.lower().endswith('.pdf'):
             return jsonify({'message': 'Only PDF files are supported'}), 400
-            
+
         filename = secure_filename(file.filename)
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         file.save(file_path)
-        
-        # 1. Document Processing
+
+        # 1. Document Processing (sequential — must complete first)
         doc_result = doc_processor.process(file_path)
         raw_text = doc_result['raw_text']
         company_name = doc_result['company_name']
         symbol = doc_result['trading_symbol']
-        
+
         if not raw_text or len(raw_text.strip()) < 50:
             return jsonify({'message': 'Could not extract sufficient text from the document.'}), 400
-            
-        # 2. Sentiment Analysis
-        sentiment_result = sentiment_analyzer.analyze(raw_text)
-        
-        # 3. Summarization
-        summary_result = summarizer_module.process(raw_text)
-        
-        # 4. Risk Analysis
+
+        # 2-5. Parallel Processing — sentiment, summaries, risk, news
+        sentiment_result = {}
+        summary_result = {}
         risk_result = None
-        if symbol:
-            risk_result = risk_analyzer.analyze(symbol)
-            
-        # 5. News
         news_result = []
-        if company_name or symbol:
-            news_result = news_module.get_news(company_name, symbol)
-            
-        # Optional: Save document info to database (history)
+
+        def run_sentiment():
+            return sentiment_analyzer.analyze(raw_text)
+
+        def run_summary():
+            return summarizer_module.process(raw_text)
+
+        def run_risk():
+            if symbol:
+                return risk_analyzer.analyze(symbol)
+            return None
+
+        def run_news():
+            if company_name or symbol:
+                return news_module.get_news(company_name, symbol)
+            return []
+
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            f_sentiment = executor.submit(run_sentiment)
+            f_summary = executor.submit(run_summary)
+            f_risk = executor.submit(run_risk)
+            f_news = executor.submit(run_news)
+
+            sentiment_result = f_sentiment.result()
+            summary_result = f_summary.result()
+            risk_result = f_risk.result()
+            news_result = f_news.result()
+
+        # Build full response
+        analysis_response = {
+            'company_name': company_name,
+            'trading_symbol': symbol,
+            'document_processing': {
+                'text_length': len(raw_text),
+                'tables_extracted': len(doc_result['tables']),
+                'extraction_method': doc_result.get('extraction_method', 'unknown'),
+                'is_scanned': doc_result.get('is_scanned', False)
+            },
+            'sentiment': sentiment_result,
+            'summaries': summary_result,
+            'risk_analysis': risk_result,
+            'news': news_result
+        }
+
+        # Save document info + full analysis to database (history)
         if supabase:
             try:
                 doc_data = {
                     'user_id': current_user['user_id'],
                     'filename': filename,
                     'company_name': company_name,
-                    'sentiment': sentiment_result['classification'],
-                    'uploaded_at': datetime.utcnow().isoformat()
+                    'sentiment': sentiment_result.get('classification', 'Neutral'),
+                    'analysis_data': json.dumps(analysis_response),
+                    'uploaded_at': datetime.now(timezone.utc).isoformat()
                 }
                 supabase.table('documents').insert(doc_data).execute()
             except Exception as e:
                 print(f"Failed to store document history: {e}")
-                
+
         # Clean up
         try:
             os.remove(file_path)
         except Exception:
             pass
-            
-        return jsonify({
-            'company_name': company_name,
-            'trading_symbol': symbol,
-            'document_processing': {
-                'text_length': len(raw_text),
-                'tables_extracted': len(doc_result['tables'])
-            },
-            'sentiment': sentiment_result,
-            'summaries': summary_result,
-            'risk_analysis': risk_result,
-            'news': news_result
-        })
-        
+
+        return jsonify(analysis_response)
+
     except Exception as e:
         print(f"Analyze error: {e}")
-        import traceback
         traceback.print_exc()
         return jsonify({'message': str(e)}), 500
 
@@ -252,6 +285,41 @@ def get_documents(current_user):
     except Exception as e:
         print(f"Error fetching documents: {e}")
         return jsonify([])
+
+@app.route('/api/documents/<int:doc_id>', methods=['DELETE'])
+@token_required
+def delete_document(current_user, doc_id):
+    try:
+        if not supabase:
+            return jsonify({'message': 'Database not connected'}), 500
+
+        result = supabase.table('documents')\
+            .delete()\
+            .eq('id', doc_id)\
+            .eq('user_id', current_user['user_id'])\
+            .execute()
+
+        return jsonify({'message': 'Document deleted'}), 200
+    except Exception as e:
+        print(f"Error deleting document: {e}")
+        return jsonify({'message': 'Failed to delete document'}), 500
+
+@app.route('/api/documents/clear', methods=['POST'])
+@token_required
+def clear_documents(current_user):
+    try:
+        if not supabase:
+            return jsonify({'message': 'Database not connected'}), 500
+
+        supabase.table('documents')\
+            .delete()\
+            .eq('user_id', current_user['user_id'])\
+            .execute()
+
+        return jsonify({'message': 'All document history cleared'}), 200
+    except Exception as e:
+        print(f"Error clearing documents: {e}")
+        return jsonify({'message': 'Failed to clear history'}), 500
 
 # Chat endpoint with Gemini - Fixed for per-user history
 @app.route('/api/chat', methods=['POST'])
@@ -323,7 +391,8 @@ Always maintain this identity and expertise."""
             
             fallback = "I'm FinSum AI, here to help with financial analysis. Ask me about company annual reports, market trends, or specific metrics like revenue growth or P/E ratios."
             
-            # Get response from Ollama
+            # Get response from Ollama (primary LLM)
+            ai_response = None
             try:
                 payload = {
                     "model": OLLAMA_MODEL,
@@ -339,9 +408,29 @@ Always maintain this identity and expertise."""
                 if response.status_code == 200:
                     ai_response = response.json().get('response', '').strip()
                 else:
-                    ai_response = fallback
+                    print(f"Ollama returned status {response.status_code}")
             except requests.RequestException as req_err:
                 print(f"Ollama connection error: {req_err}")
+
+            # Fallback to Gemini if Ollama failed and API key is set
+            if not ai_response and GEMINI_API_KEY:
+                try:
+                    print("⚡ Falling back to Gemini API...")
+                    gemini_payload = {
+                        "contents": [{"parts": [{"text": full_prompt}]}]
+                    }
+                    gemini_resp = requests.post(
+                        f"{GEMINI_URL}?key={GEMINI_API_KEY}",
+                        json=gemini_payload, timeout=30
+                    )
+                    if gemini_resp.status_code == 200:
+                        candidates = gemini_resp.json().get('candidates', [])
+                        if candidates:
+                            ai_response = candidates[0]['content']['parts'][0]['text'].strip()
+                except Exception as gem_err:
+                    print(f"Gemini fallback also failed: {gem_err}")
+
+            if not ai_response:
                 ai_response = fallback
                 
             if not ai_response:
@@ -358,7 +447,7 @@ Always maintain this identity and expertise."""
                         'user_id': user_id,
                         'message': user_message,
                         'response': ai_response,
-                        'created_at': datetime.utcnow().isoformat()
+                        'created_at': datetime.now(timezone.utc).isoformat()
                     }
                     result = supabase.table('chat_history').insert(chat_data).execute()
                     if result.data:
@@ -468,7 +557,7 @@ def signup():
             'email': email,
             'full_name': full_name,
             'password_hash': password_hash,
-            'created_at': datetime.utcnow().isoformat()
+            'created_at': datetime.now(timezone.utc).isoformat()
         }
         
         result = supabase.table('users').insert(user_data).execute()
@@ -542,6 +631,72 @@ def signin():
         traceback.print_exc()
         return jsonify({"message": str(e)}), 500
 
+@app.route('/api/auth/google', methods=['POST'])
+def google_auth():
+    try:
+        if not supabase:
+            return jsonify({"message": "Database not connected"}), 500
+
+        data = request.json
+        token = data.get('credential')
+
+        if not token:
+            return jsonify({"message": "Google token required"}), 400
+
+        # Verify token with Google
+        verify_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={token}"
+        response = requests.get(verify_url)
+        
+        if response.status_code != 200:
+            return jsonify({"message": "Invalid Google token"}), 401
+
+        google_data = response.json()
+        email = google_data.get('email')
+        full_name = google_data.get('name')
+        
+        if not email:
+            return jsonify({"message": "Email not provided by Google"}), 400
+
+        # Check if user exists
+        result = supabase.table('users').select('*').eq('email', email).execute()
+        
+        if result.data:
+            user = result.data[0]
+        else:
+            # Create new user for Google login
+            user_id = str(uuid.uuid4())
+            user = {
+                'user_id': user_id,
+                'email': email,
+                'full_name': full_name,
+                'password_hash': 'GOOGLE_OAUTH_ACCOUNT', # No password for OAuth users
+                'created_at': datetime.now(timezone.utc).isoformat()
+            }
+            supabase.table('users').insert(user).execute()
+
+        # Generate FinSum JWT token
+        import jwt
+        from datetime import datetime, timedelta
+        
+        finsum_token = jwt.encode({
+            'user_id': user['user_id'],
+            'email': user['email'],
+            'exp': datetime.now(timezone.utc) + timedelta(days=1)
+        }, JWT_SECRET, algorithm='HS256')
+
+        return jsonify({
+            "token": finsum_token,
+            "user": {
+                "id": user['user_id'],
+                "email": user['email'],
+                "fullName": user['full_name']
+            }
+        }), 200
+
+    except Exception as e:
+        print(f"Google Auth error: {e}")
+        return jsonify({"message": "Google authentication failed"}), 500
+
 @app.route('/api/auth/verify', methods=['GET'])
 @token_required
 def verify(current_user):
@@ -555,18 +710,22 @@ def verify(current_user):
     }), 200
 
 if __name__ == '__main__':
+    port = int(os.getenv("PORT", 8000))
+    host = os.getenv("HOST", "0.0.0.0")
+    domain = os.getenv("DOMAIN", f"http://localhost:{port}")
+    
     print("\n" + "="*60)
     print("🚀 FinSum AI Backend Running")
     print("="*60)
-    print(f"📡 Server: http://localhost:8000")
-    print(f"🏠 Home: http://localhost:8000/")
-    print(f"🔑 Sign In: http://localhost:8000/signin")
-    print(f"📝 Sign Up: http://localhost:8000/signup")
-    print(f"📊 Dashboard: http://localhost:8000/dashboard")
-    print(f"🤖 FinSum AI: http://localhost:8000/api/chat")
-    print(f"🔧 Test: http://localhost:8000/api/test")
+    print(f"📡 Server: {domain}")
+    print(f"🏠 Home: {domain}/")
+    print(f"🔑 Sign In: {domain}/signin")
+    print(f"📝 Sign Up: {domain}/signup")
+    print(f"📊 Dashboard: {domain}/dashboard")
+    print(f"🤖 FinSum AI: {domain}/api/chat")
+    print(f"🔧 Test: {domain}/api/test")
     print("-" * 60)
     print(f"✅ FinSum AI Ready: {model is not None}")
     print(f"✅ Database Connected: {supabase is not None}")
     print("="*60 + "\n")
-    app.run(debug=True, port=8000, host='0.0.0.0')
+    app.run(debug=True, port=port, host=host)

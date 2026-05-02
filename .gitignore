@@ -33,3 +33,7 @@ backend/uploads/*
 
 # Generated files
 backend/req_no_supa.txt
+
+# Model cache
+backend/.model_cache/
+nltk_data/

@@ -1,7 +1,7 @@
 // frontend/js/dashboard.js
 class Dashboard {
     constructor() {
-        this.apiUrl = 'http://localhost:8000/api';
+        this.apiUrl = '/api';
         this.checkAuth();
         this.init();
     }
@@ -21,7 +21,7 @@ class Dashboard {
     init() {
         this.displayUserInfo();
         this.setupEventListeners();
-        this.loadSampleData();
+        this.loadDocumentHistory();
         this.loadChatHistory();
     }
 
@@ -59,8 +59,13 @@ class Dashboard {
         if (viewAllHistory) {
             viewAllHistory.addEventListener('click', (e) => {
                 e.preventDefault();
-                alert('History feature coming soon!');
+                this.openHistoryModal();
             });
+        }
+
+        const clearAllHistoryBtn = document.getElementById('clearAllHistoryBtn');
+        if (clearAllHistoryBtn) {
+            clearAllHistoryBtn.addEventListener('click', () => this.clearAllHistory());
         }
 
         // Chat widget
@@ -292,7 +297,14 @@ class Dashboard {
 
         const tablesEl = document.getElementById('resultTables');
         if (tablesEl && data.document_processing) {
-            tablesEl.textContent = data.document_processing.tables_extracted || 0;
+            let info = `${data.document_processing.tables_extracted || 0}`;
+            if (data.document_processing.extraction_method) {
+                info += ` | ${data.document_processing.extraction_method}`;
+            }
+            if (data.document_processing.is_scanned) {
+                info += ' (scanned)';
+            }
+            tablesEl.textContent = info;
         }
 
         // Sentiment
@@ -363,6 +375,9 @@ class Dashboard {
                     { label: 'Altman Z-Score', value: r.altman_z_score ? `${r.altman_z_score.toFixed(2)} (${r.altman_zone})` : 'N/A' },
                     { label: 'SMA 50', value: r.sma_50 ? `₹${r.sma_50.toFixed(2)}` : 'N/A' },
                     { label: 'SMA 200', value: r.sma_200 ? `₹${r.sma_200.toFixed(2)}` : 'N/A' },
+                    { label: 'Piotroski F-Score', value: r.piotroski_f_score != null ? `${r.piotroski_f_score}/9` : 'N/A' },
+                    { label: 'Beneish M-Score', value: r.beneish_m_score != null ? `${r.beneish_m_score} (${r.beneish_flag})` : 'N/A' },
+                    { label: 'Credit Rating', value: r.credit_rating || 'N/A' },
                 ];
                 riskEl.innerHTML = metrics.map(m => `
                     <div style="background:white;padding:12px;border-radius:10px;text-align:center;">
@@ -370,6 +385,19 @@ class Dashboard {
                         <div style="font-weight:700;font-size:16px;margin-top:4px;color:#0a1a2b;">${m.value}</div>
                     </div>
                 `).join('');
+                if (r.insider_data) {
+                    let ih = '<div style="grid-column:1/-1;margin-top:10px;padding:15px;background:white;border-radius:12px;">';
+                    ih += '<div style="font-weight:600;color:#1b6ef3;margin-bottom:8px;font-size:13px;text-transform:uppercase;">Insider & Promoter Data</div>';
+                    if (r.insider_data.promoter_holding != null) ih += `<div style="font-size:14px;">Promoter Holding: <strong>${r.insider_data.promoter_holding}%</strong></div>`;
+                    if (r.insider_data.promoter_pledging != null) ih += `<div style="font-size:14px;">Promoter Pledging: <strong>${r.insider_data.promoter_pledging}%</strong></div>`;
+                    if (r.insider_data.insider_trades && r.insider_data.insider_trades.length > 0) {
+                        ih += '<div style="margin-top:8px;font-size:13px;color:#5a6d86;">';
+                        r.insider_data.insider_trades.slice(0,3).forEach(t => { ih += `<div>${this.escapeHtml(t.name)} - ${t.type} (${t.shares} shares)</div>`; });
+                        ih += '</div>';
+                    }
+                    ih += '</div>';
+                    riskEl.innerHTML += ih;
+                }
             }
 
             const recEl = document.getElementById('riskRecommendation');
@@ -409,41 +437,224 @@ class Dashboard {
         // Scroll to results
         results.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-        // Update doc count
-        const docCount = document.getElementById('documentCount');
-        if (docCount) {
-            let current = parseInt(docCount.textContent || '0');
-            docCount.textContent = (current + 1).toString();
-        }
-
-        const totalDocs = document.getElementById('totalDocuments');
-        if (totalDocs) {
-            let current = parseInt(totalDocs.textContent.split(' ')[0] || '0');
-            totalDocs.textContent = `${current + 1} Total`;
-        }
+        // Reload document history table
+        this.loadDocumentHistory();
     }
 
-    loadSampleData() {
-        const docCount = document.getElementById('documentCount');
-        if (docCount) {
-            docCount.textContent = '5';
-        }
-        
-        const lastUsed = document.getElementById('lastUsed');
-        if (lastUsed) {
-            lastUsed.textContent = 'Ready to help';
-        }
-        
-        const totalDocs = document.getElementById('totalDocuments');
-        if (totalDocs) {
-            totalDocs.textContent = '5 Total';
-        }
+    loadDocumentHistory() {
+        if (!window.auth.isAuthenticated()) return;
+
+        fetch(`${this.apiUrl}/documents`, {
+            headers: { 'Authorization': `Bearer ${window.auth.token}` }
+        })
+        .then(r => r.json())
+        .then(docs => {
+            const tbody = document.getElementById('tableBody');
+            const total = document.getElementById('totalDocuments');
+            const docCount = document.getElementById('documentCount');
+            if (!tbody) return;
+
+            if (docs.length === 0) return;
+
+            const noRow = document.getElementById('noDocsRow');
+            if (noRow) noRow.remove();
+
+            if (total) total.textContent = `${docs.length} Total`;
+            if (docCount) docCount.textContent = docs.length.toString();
+
+            tbody.innerHTML = '';
+            this.historyDocs = docs; // Ensure it's stored for the main dashboard view too
+            docs.slice(0, 20).forEach(doc => {
+                const date = doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : 'N/A';
+                const sentColor = doc.sentiment === 'Positive' ? '#10b981' : doc.sentiment === 'Negative' ? '#ef4444' : '#f59e0b';
+                
+                const viewBtn = doc.analysis_data 
+                    ? `<button onclick="window.dashboard.openHistoricalDocument(${doc.id})" style="background:none;border:none;color:#1b6ef3;cursor:pointer;font-size:16px;padding:4px;" title="View Analysis">
+                           <i class="fas fa-eye"></i>
+                       </button>` 
+                    : '';
+
+                tbody.innerHTML += `
+                    <tr id="histDocMain-${doc.id}">
+                        <td>${this.escapeHtml(doc.filename || 'Unknown')}</td>
+                        <td>${this.escapeHtml(doc.company_name || 'N/A')}</td>
+                        <td><span style="background:${sentColor}22;color:${sentColor};padding:4px 12px;border-radius:20px;font-weight:600;font-size:12px;">${doc.sentiment || 'N/A'}</span></td>
+                        <td>${date}</td>
+                        <td>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                ${viewBtn}
+                                <button onclick="window.dashboard.deleteDocument(${doc.id})" style="background:none;border:none;color:#cbd5e1;cursor:pointer;font-size:16px;padding:4px;" title="Delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        })
+        .catch(err => console.error('Failed to load document history:', err));
     }
 
     escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    openHistoryModal() {
+        const modal = document.getElementById('historyModal');
+        const body = document.getElementById('historyModalBody');
+        const count = document.getElementById('historyCount');
+        if (!modal || !body) return;
+
+        modal.style.display = 'block';
+        body.innerHTML = '<div style="text-align:center;color:#8a9bb5;padding:40px;">Loading...</div>';
+
+        // Close on backdrop click
+        modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+
+        fetch(`${this.apiUrl}/documents`, {
+            headers: { 'Authorization': `Bearer ${window.auth.token}` }
+        })
+        .then(r => r.json())
+        .then(docs => {
+            if (count) count.textContent = `${docs.length} document${docs.length !== 1 ? 's' : ''} analyzed`;
+
+            if (docs.length === 0) {
+                body.innerHTML = '<div style="text-align:center;color:#8a9bb5;padding:60px;"><i class="fas fa-folder-open" style="font-size:48px;margin-bottom:15px;display:block;"></i>No documents analyzed yet.</div>';
+                return;
+            }
+
+            let html = '';
+            this.historyDocs = docs; // Store for easy retrieval when viewing
+            docs.forEach(doc => {
+                const date = doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : 'N/A';
+                const sentColor = doc.sentiment === 'Positive' ? '#10b981' : doc.sentiment === 'Negative' ? '#ef4444' : '#f59e0b';
+                
+                // Only show View button if we have analysis data saved for this document
+                const viewBtn = doc.analysis_data 
+                    ? `<button onclick="window.dashboard.openHistoricalDocument(${doc.id})" style="background:#f1f5f9;border:none;color:#1b6ef3;cursor:pointer;font-size:13px;padding:6px 12px;border-radius:10px;font-weight:600;" title="View Analysis">
+                           <i class="fas fa-eye"></i> View
+                       </button>` 
+                    : '';
+
+                html += `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #f1f5f9;" id="histDoc-${doc.id}">
+                        <div style="flex:1;">
+                            <div style="font-weight:600;color:#0a1a2b;font-size:14px;">${this.escapeHtml(doc.filename || 'Unknown')}</div>
+                            <div style="color:#8a9bb5;font-size:12px;margin-top:3px;">
+                                ${this.escapeHtml(doc.company_name || 'No company detected')} &bull; ${date}
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <span style="background:${sentColor}22;color:${sentColor};padding:4px 12px;border-radius:20px;font-weight:600;font-size:12px;">${doc.sentiment || 'N/A'}</span>
+                            ${viewBtn}
+                            <button onclick="window.dashboard.deleteDocument(${doc.id})" style="background:none;border:none;color:#cbd5e1;cursor:pointer;font-size:16px;padding:4px;" title="Delete">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            body.innerHTML = html;
+        })
+        .catch(err => {
+            body.innerHTML = '<div style="text-align:center;color:#ef4444;padding:40px;">Failed to load history.</div>';
+            console.error(err);
+        });
+    }
+
+    openHistoricalDocument(docId) {
+        if (!this.historyDocs) return;
+        const doc = this.historyDocs.find(d => d.id === docId);
+        if (!doc || !doc.analysis_data) return;
+
+        try {
+            let data = typeof doc.analysis_data === 'string' ? JSON.parse(doc.analysis_data) : doc.analysis_data;
+            this.updateDashboardWithResults(data);
+            document.getElementById('historyModal').style.display = 'none';
+            this.showNotification(`Loaded analysis for ${doc.filename}`);
+        } catch (err) {
+            console.error('Failed to parse analysis data:', err);
+            this.showNotification('Failed to load analysis details', 'error');
+        }
+    }
+
+    async deleteDocument(docId) {
+        if (!confirm('Delete this document from history?')) return;
+
+        try {
+            const resp = await fetch(`${this.apiUrl}/documents/${docId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${window.auth.token}` }
+            });
+
+            if (resp.ok) {
+                const row = document.getElementById(`histDoc-${docId}`);
+                const mainRow = document.getElementById(`histDocMain-${docId}`);
+
+                if (mainRow) {
+                    mainRow.style.transition = 'opacity 0.3s, transform 0.3s';
+                    mainRow.style.opacity = '0';
+                    mainRow.style.transform = 'translateX(20px)';
+                    setTimeout(() => mainRow.remove(), 300);
+                }
+
+                if (row) {
+                    row.style.transition = 'opacity 0.3s, transform 0.3s';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(20px)';
+                    setTimeout(() => {
+                        row.remove();
+                        // Update modal count
+                        const count = document.getElementById('historyCount');
+                        const remaining = document.querySelectorAll('[id^="histDoc-"]').length;
+                        if (count) count.textContent = `${remaining} document${remaining !== 1 ? 's' : ''} analyzed`;
+                        if (remaining === 0) {
+                            const body = document.getElementById('historyModalBody');
+                            if (body) body.innerHTML = '<div style="text-align:center;color:#8a9bb5;padding:60px;"><i class="fas fa-folder-open" style="font-size:48px;margin-bottom:15px;display:block;"></i>No documents analyzed yet.</div>';
+                        }
+                        this.loadDocumentHistory();
+                    }, 300);
+                } else {
+                    this.loadDocumentHistory();
+                }
+                this.showNotification('Document deleted from history');
+            }
+        } catch (err) {
+            console.error('Delete failed:', err);
+            this.showNotification('Failed to delete document', 'error');
+        }
+    }
+
+    async clearAllHistory() {
+        if (!confirm('Clear ALL document history? This cannot be undone.')) return;
+
+        try {
+            const resp = await fetch(`${this.apiUrl}/documents/clear`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${window.auth.token}` }
+            });
+
+            if (resp.ok) {
+                document.getElementById('historyModal').style.display = 'none';
+                this.loadDocumentHistory();
+                this.showNotification('All history cleared');
+
+                // Reset table to empty state
+                const tbody = document.getElementById('tableBody');
+                if (tbody) {
+                    tbody.innerHTML = '<tr id="noDocsRow"><td colspan="5" style="text-align:center;color:#8a9bb5;padding:30px;">No documents analyzed yet. Upload a PDF above to get started.</td></tr>';
+                }
+                const total = document.getElementById('totalDocuments');
+                if (total) total.textContent = '0 Total';
+                const docCount = document.getElementById('documentCount');
+                if (docCount) docCount.textContent = '0';
+            }
+        } catch (err) {
+            console.error('Clear failed:', err);
+            this.showNotification('Failed to clear history', 'error');
+        }
     }
 }
 

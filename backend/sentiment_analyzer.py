@@ -1,7 +1,12 @@
+import os
 import re
 from transformers import pipeline
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from textblob import TextBlob
+
+# Use default HuggingFace cache (~/.cache/huggingface) for model persistence
+# Models are downloaded once and reused on subsequent starts (~5s vs ~50s)
+
 
 class SentimentAnalyzer:
     def __init__(self):
@@ -12,14 +17,19 @@ class SentimentAnalyzer:
             'fraud': -0.80, 'insolvency': -0.80, 'bankruptcy': -0.80, 'default': -0.75,
             'penalty': -0.60, 'loss': -0.50, 'resignation': -0.40, 'lawsuit': -0.50
         }
-        
-        # HuggingFace FinBERT
+
+        # HuggingFace FinBERT — uses local cache after first download
         try:
-            self.finbert = pipeline("sentiment-analysis", model="ProsusAI/finbert")
-        except Exception:
+            self.finbert = pipeline(
+                "sentiment-analysis",
+                model="ProsusAI/finbert"
+            )
+            print("✅ FinBERT loaded")
+        except Exception as e:
+            print(f"⚠️ FinBERT not available: {e}")
             self.finbert = None
-            
-        # VADER
+
+        # VADER — loads instantly, no download needed
         self.vader = SentimentIntensityAnalyzer()
 
     def keyword_score(self, text):
@@ -30,7 +40,7 @@ class SentimentAnalyzer:
             if event in text_lower:
                 score += weight
                 matches += 1
-        
+
         if matches == 0:
             return 0
         return max(min(score / matches, 1.0), -1.0)
@@ -38,14 +48,14 @@ class SentimentAnalyzer:
     def finbert_score(self, text):
         if not self.finbert or not text.strip():
             return 0
-            
+
         # Truncate text to avoid exceeding token limit (512 tokens)
         truncated_text = text[:1500]
         try:
             result = self.finbert(truncated_text)[0]
             label = result['label']
             score = result['score']
-            
+
             if label == 'positive':
                 return score
             elif label == 'negative':
@@ -66,22 +76,21 @@ class SentimentAnalyzer:
         finbert = self.finbert_score(text)
         vader = self.vader_score(text)
         textblob = self.textblob_score(text)
-        
-        # As per the prompt formula:
-        # Final Score = (Keyword × 0.40) + (Financial × 0.25) + (Numerical × 0.20) + (Context × 0.15)
-        # Since we use 4 models, we adapt it to: Keyword (40%), FinBERT (30%), VADER (20%), TextBlob (10%)
+
+        # Weighted fusion:
+        # Keyword (40%), FinBERT (30%), VADER (20%), TextBlob (10%)
         final_score = (keyword * 0.40) + (finbert * 0.30) + (vader * 0.20) + (textblob * 0.10)
-        
+
         # Normalize
         final_score = max(min(final_score, 1.0), -1.0)
-        
+
         if final_score >= 0.15:
             classification = "Positive"
         elif final_score <= -0.15:
             classification = "Negative"
         else:
             classification = "Neutral"
-            
+
         return {
             "score": round(final_score, 4),
             "classification": classification,

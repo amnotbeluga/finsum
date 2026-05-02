@@ -6,6 +6,7 @@
     <title>Sign Up - Finserv India</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         body {
             background: linear-gradient(135deg, #f0f5fa 0%, #e6ecf5 100%);
@@ -211,9 +212,25 @@
                 <span class="divider-line"></span> OR CONTINUE WITH <span class="divider-line"></span>
             </div>
 
-            <button class="btn-outline" onclick="alert('Google login coming soon!')">
-                <i class="fab fa-google"></i> Google
-            </button>
+            <!-- Configure your Google Client ID here -->
+            <div id="g_id_onload"
+                 data-client_id="YOUR_GOOGLE_CLIENT_ID"
+                 data-context="signup"
+                 data-ux_mode="popup"
+                 data-callback="handleCredentialResponse"
+                 data-auto_prompt="false">
+            </div>
+
+            <div style="display:flex; justify-content:center;">
+                <div class="g_id_signin"
+                     data-type="standard"
+                     data-shape="pill"
+                     data-theme="outline"
+                     data-text="signup_with"
+                     data-size="large"
+                     data-logo_alignment="left">
+                </div>
+            </div>
 
             <div class="footer-links">
                 <span>Already have an account? <a href="/signin">Sign In</a></span>
@@ -223,6 +240,25 @@
 
     <script src="js/auth.js"></script>
     <script>
+        async function handleCredentialResponse(response) {
+            showAlert('Authenticating with Google...', 'success');
+            
+            try {
+                const result = await window.auth.googleSignin(response.credential);
+                
+                if (result.success) {
+                    showAlert('Google login successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1500);
+                } else {
+                    showAlert(result.message || 'Google login failed', 'error');
+                }
+            } catch (error) {
+                showAlert('An error occurred during Google sign in.', 'error');
+            }
+        }
+
         function showAlert(message, type) {
             const alert = document.getElementById('alertContainer');
             alert.className = `alert alert-${type}`;

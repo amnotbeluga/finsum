@@ -1,7 +1,7 @@
 // frontend/js/auth.js
 class Auth {
     constructor() {
-        this.baseUrl = 'http://localhost:8000/api';
+        this.baseUrl = '/api';
         this.token = localStorage.getItem('token');
         this.user = JSON.parse(localStorage.getItem('user') || 'null');
     }
@@ -66,6 +66,37 @@ class Auth {
             }
         } catch (error) {
             console.error('Signin error:', error);
+            return { success: false, message: 'Network error. Please check if backend is running.' };
+        }
+    }
+
+    async googleSignin(credential) {
+        try {
+            console.log('Sending Google credential to backend...');
+            
+            const response = await fetch(`${this.baseUrl}/auth/google`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ credential })
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                if (data.token) {
+                    this.setToken(data.token);
+                    this.setUser(data.user);
+                    return { success: true, data };
+                } else {
+                    return { success: false, message: 'No token received from backend' };
+                }
+            } else {
+                return { success: false, message: data.message || 'Google Login failed' };
+            }
+        } catch (error) {
+            console.error('Google Signin error:', error);
             return { success: false, message: 'Network error. Please check if backend is running.' };
         }
     }
