@@ -41,6 +41,7 @@ FinSum Capital is a full-stack financial intelligence platform that analyzes com
 | Failsafe | Fallback |
 |----------|----------|
 | **Yahoo Finance API** | Automatically pivots to Google Finance web scraping if rate-limited |
+| **Trading Symbol** | Uses Yahoo Finance Search API to reverse-lookup ticker if explicitly missing from PDF |
 | **Ollama LLM** | Falls back to Gemini 2.0 Flash cloud API if local server is down |
 | **PaddleOCR** | Falls back to Tesseract → pdfplumber force-extraction |
 | **Camelot Tables** | Falls back to Tabula-py for table extraction |
@@ -243,11 +244,11 @@ Open your browser and navigate to:
 
 | Page | URL |
 |------|-----|
-| 🏠 Landing Page | http://localhost:8000/ |
-| 🔑 Sign In | http://localhost:8000/signin |
-| 📝 Sign Up | http://localhost:8000/signup |
-| 📊 Dashboard | http://localhost:8000/dashboard |
-| 🔧 Health Check | http://localhost:8000/api/test |
+| 🏠 Landing Page | `http://localhost:8000/` (or your `$DOMAIN`) |
+| 🔑 Sign In | `http://localhost:8000/signin` |
+| 📝 Sign Up | `http://localhost:8000/signup` |
+| 📊 Dashboard | `http://localhost:8000/dashboard` |
+| 🔧 Health Check | `http://localhost:8000/api/test` |
 
 ---
 
@@ -266,11 +267,13 @@ Open your browser and navigate to:
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/analyze` | Upload PDF for full analysis (sentiment + summary + risk + news) |
-| `GET` | `/api/documents` | Get user's document scan history |
-| `POST` | `/api/chat` | Chat with FinSum AI |
-| `GET` | `/api/chat/history` | Get user's chat history |
-| `POST` | `/api/chat/clear` | Clear user's chat history |
+| `POST`   | `/api/analyze` | Upload PDF for full analysis (sentiment + summary + risk + news) |
+| `GET`    | `/api/documents` | Get user's document scan history |
+| `DELETE` | `/api/documents/<id>` | Delete a specific document from history |
+| `POST`   | `/api/documents/clear` | Clear all document history |
+| `POST`   | `/api/chat` | Chat with FinSum AI |
+| `GET`    | `/api/chat/history` | Get user's chat history |
+| `POST`   | `/api/chat/clear` | Clear user's chat history |
 
 ### Example: Analyze a Document
 
