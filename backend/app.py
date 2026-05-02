@@ -21,7 +21,7 @@ from risk_analyzer import RiskAnalyzer
 from news_module import NewsModule
 
 # Load environment variables from .env
-load_dotenv()
+load_dotenv(override=True)
 
 doc_processor = None
 sentiment_analyzer = None
@@ -121,19 +121,25 @@ def serve_index():
 def serve_dashboard():
     return send_from_directory('../frontend', 'dashboard.html')
 
+from flask import make_response
+
 @app.route('/signin')
 def serve_signin():
     client_id = os.getenv("GOOGLE_CLIENT_ID", "")
     with open('../frontend/signin.html', 'r') as f:
         html = f.read()
-    return html.replace('YOUR_GOOGLE_CLIENT_ID', client_id)
+    response = make_response(html.replace('YOUR_GOOGLE_CLIENT_ID', client_id))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    return response
 
 @app.route('/signup')
 def serve_signup():
     client_id = os.getenv("GOOGLE_CLIENT_ID", "")
     with open('../frontend/signup.html', 'r') as f:
         html = f.read()
-    return html.replace('YOUR_GOOGLE_CLIENT_ID', client_id)
+    response = make_response(html.replace('YOUR_GOOGLE_CLIENT_ID', client_id))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    return response
 
 @app.route('/css/<path:path>')
 def serve_css(path):
