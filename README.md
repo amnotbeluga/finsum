@@ -19,8 +19,8 @@ FinSum Capital is a full-stack financial intelligence platform that analyzes com
 | 🏛️ **Insider Data** | Promoter holding, promoter pledging percentage, and insider trading activity from NSE/yfinance |
 | 📰 **News Aggregation** | Real-time financial news from Google News RSS and Yahoo Finance with sentiment tagging |
 | 🤖 **AI Chat Assistant** | Chat with FinSum AI powered by Ollama (Llama 3) with Gemini API fallback |
-| 🔐 **Auth System** | JWT-based authentication with Supabase (PostgreSQL) backend |
-| 📋 **Scan History** | Persistent document analysis history stored in Supabase with sentiment tracking |
+| 🔐 **Auth System** | JWT-based auth + **Google OAuth Sign-In** natively integrated with Supabase (PostgreSQL) backend |
+| 📋 **Scan History** | Persistent document analysis history stored in Supabase with full JSON cache for instant "View Analysis" reloads |
 
 ---
 
@@ -128,11 +128,24 @@ pip install -r requirements.txt
 Create a `.env` file in the `backend/` directory:
 
 ```env
+# Supabase Configuration
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_KEY=your_supabase_anon_jwt_key
 SECRET_KEY=your_service_role_key
 JWT_SECRET=your_jwt_secret
-GEMINI_API_KEY=your_gemini_api_key  # Optional: enables LLM fallback
+
+# Deployment & Hosting Configuration
+PORT=8000
+HOST=0.0.0.0
+DOMAIN=http://localhost:8000
+OLLAMA_API_URL=http://localhost:11434/api/generate
+OLLAMA_MODEL=llama3
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your_google_cloud_client_id
+
+# Optional LLM Fallback
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 > **Where to find these:** Supabase Dashboard → Project Settings → API
@@ -172,6 +185,7 @@ CREATE TABLE public.documents (
     filename TEXT,
     company_name TEXT,
     sentiment TEXT,
+    analysis_data JSONB,
     uploaded_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -244,8 +258,9 @@ Open your browser and navigate to:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/api/auth/signup` | Register a new user |
-| `POST` | `/api/auth/signin` | Sign in and receive JWT |
-| `GET` | `/api/auth/verify` | Verify JWT token |
+| `POST` | `/api/auth/signin` | Sign in and receive custom JWT |
+| `POST` | `/api/auth/google` | Google OAuth token verification & auto-provisioning |
+| `GET`  | `/api/auth/verify` | Verify custom JWT token |
 
 ### Core Features (requires JWT)
 
