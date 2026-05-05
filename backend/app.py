@@ -545,7 +545,7 @@ def signup():
             token = jwt.encode({
                 'user_id': user_id,
                 'email': email,
-                'exp': datetime.utcnow() + timedelta(days=1)
+                'exp': datetime.now(timezone.utc) + timedelta(days=1)
             }, JWT_SECRET, algorithm='HS256')
             
             return jsonify({
@@ -588,7 +588,7 @@ def signin():
             token = jwt.encode({
                 'user_id': user['user_id'],
                 'email': user['email'],
-                'exp': datetime.utcnow() + timedelta(days=1)
+                'exp': datetime.now(timezone.utc) + timedelta(days=1)
             }, JWT_SECRET, algorithm='HS256')
             
             return jsonify({
@@ -627,7 +627,7 @@ def google_auth():
 
         google_data = response.json()
         email = google_data.get('email')
-        full_name = google_data.get('name')
+        full_name = google_data.get('name', '')
         
         if not email:
             return jsonify({"message": "Email not provided by Google"}), 400
@@ -647,9 +647,6 @@ def google_auth():
             }
             supabase.table('users').insert(user).execute()
 
-        import jwt
-        from datetime import datetime, timedelta
-        
         finsum_token = jwt.encode({
             'user_id': user['user_id'],
             'email': user['email'],
@@ -661,7 +658,7 @@ def google_auth():
             "user": {
                 "id": user['user_id'],
                 "email": user['email'],
-                "fullName": user['full_name']
+                "fullName": user.get('full_name', '')
             }
         }), 200
 
